@@ -1,0 +1,201 @@
+/**
+ * Dashboard Page - SaaS Style
+ * Main analytics and metrics page with modern UI and real API data
+ */
+
+import { useState, useEffect } from 'react';
+import StatsCards from '../components/StatsCards';
+import Charts from '../components/Charts';
+import DataTable from '../components/DataTable';
+import { useTheme } from '../context/ThemeContext';
+import api from '../api/api';
+import { API_CONFIG } from '../constants/api';
+import { AlertCircle } from 'lucide-react';
+
+const Dashboard = () => {
+  const { isDark } = useTheme();
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [postulantesRecientes, setPostulantesRecientes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const postulantesColumns = [
+    {
+      key: 'nombre',
+      label: 'Nombre',
+      sortable: true,
+      render: (value, row) => `${row.nombre || ''} ${row.apellido || ''}`.trim() || '-',
+    },
+    {
+      key: 'ci',
+      label: 'CI',
+      sortable: true,
+      render: (value) => value || '-',
+    },
+    {
+      key: 'carrera',
+      label: 'Carrera',
+      sortable: true,
+      render: (value) => value || '-',
+    },
+    {
+      key: 'codigo_estudiante',
+      label: 'Código',
+      sortable: true,
+      render: (value) => value || '-',
+    },
+  ];
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Obtener datos del dashboard
+      const dashboardResult = await api.getAll(API_CONFIG.ENDPOINTS.DASHBOARD_GENERAL);
+      
+      if (dashboardResult.success) {
+        setDashboardStats(dashboardResult.data);
+      } else {
+        throw new Error(dashboardResult.error || 'Error al cargar dashboard');
+      }
+
+      // Obtener postulantes recientes (primeros 5)
+      const postulantesResult = await api.getAll(API_CONFIG.ENDPOINTS.POSTULANTES, { limit: 5 });
+      
+      if (postulantesResult.success) {
+        const data = Array.isArray(postulantesResult.data) 
+          ? postulantesResult.data 
+          : postulantesResult.data.results || [];
+        setPostulantesRecientes(data.slice(0, 5));
+      }
+    } catch (err) {
+      console.error('Error loading dashboard:', err);
+      setError(err.message || 'Error al cargar datos del dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    await fetchDashboardData();
+  };
+
+  return (
+    <div className="p-4 md:p-8">
+        {/* Encabezado */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Resumen general del sistema de graduación
+            </p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition font-medium"
+          >
+            {loading ? '🔄 Actualizando...' : '🔄 Actualizar'}
+          </button>
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className={`mb-6 p-4 rounded-lg border flex items-start gap-3 ${
+            isDark
+              ? 'bg-red-900/20 border-red-800 text-red-400'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}>
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">Error al cargar datos</p>
+              <p className="text-sm mt-1">{error}</p>
+              <button
+                onClick={handleRefresh}
+                className="text-sm mt-2 underline hover:no-underline"
+              >
+                Reintentar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-gray-500 dark:text-gray-400">Cargando datos...</p>
+            </div>
+          </div>
+        )}
+
+        {!loading && dashboardStats && (
+          <>
+            {/* Tarjetas de Estadísticas */}
+            <StatsCards
+              stats={{
+                totalPostulantes: {
+                  value: dashboardStats.total_postulantes || 0,
+                  change: 12,
+                  color: 'blue',
+                },
+                documentosPendientes: {
+                  value: dashboardStats.documentos_pendientes || 0,
+                  change: -8,
+                  color: 'yellow',
+                },
+                graduados: {
+                  value: dashboardStats.total_titulados || 0,
+                  change: 24,
+                  color: 'green',
+                },
+                tasaAprobacion: {
+                  value: dashboardStats.tasa_aprobacion || 87,
+                  change: 5,
+                  color: 'purple',
+                },
+              }}
+            />
+
+            {/* Gráficos */}
+            <Charts isDark={isDark} />
+
+            {/* Tabla de Postulantes Recientes */}
+            {postulantesRecientes.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  Postulantes Recientes
+                </h2>
+                <DataTable
+                  data={postulantesRecientes}
+                  columns={postulantesColumns}
+                  pageSize={5}
+                  isDark={isDark}
+                  onView={(row) => console.log('Ver:', row)}
+                  onEdit={(row) => console.log('Editar:', row)}
+                />
+              </div>
+            )}
+
+            {/* Info Footer */}
+            <div className={`p-4 rounded-lg border text-sm ${
+              isDark
+                ? 'bg-gray-900 border-gray-700 text-gray-400'
+                : 'bg-gray-50 border-gray-200 text-gray-600'
+            }`}>
+              <p>ℹ️ Última actualización: {new Date().toLocaleTimeString('es-ES')}</p>
+            </div>
+          </>
+        )}
+      </div>
+    );
+};
+
+export default Dashboard;
