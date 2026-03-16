@@ -46,7 +46,7 @@ const Charts = ({ isDark = false }) => {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
       {/* Gráfico de Barras */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Postulantes & Documentos por Semana
         </h3>
@@ -72,7 +72,7 @@ const Charts = ({ isDark = false }) => {
       </div>
 
       {/* Gráfico de Línea */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Progreso General (6 Meses)
         </h3>
@@ -123,7 +123,7 @@ const Charts = ({ isDark = false }) => {
       </div>
 
       {/* Gráfico Circular - Primera mitad (ancho completo en móvil, mitad en desktop) */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 lg:col-span-1 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 lg:col-span-1 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Distribución por Estado
         </h3>
@@ -171,7 +171,7 @@ const Charts = ({ isDark = false }) => {
       </div>
 
       {/* Resumen de Métricas Clave */}
-      <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+      <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Resumen de Métricas
         </h3>

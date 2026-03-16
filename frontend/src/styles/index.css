@@ -90,6 +90,16 @@
   animation: shimmer 2s infinite;
 }
 
+/* Fade In Effect (for card appearance) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Smooth Transitions */
 * {
   @apply transition-colors duration-200;
