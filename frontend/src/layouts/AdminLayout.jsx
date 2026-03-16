@@ -1,14 +1,19 @@
 /**
  * Admin Layout Component
- * Wraps protected pages with Navbar and Sidebar
+ * Wraps protected pages with Header and Sidebar
+ * Includes global loader for HTTP requests
  */
 
 import Header from '../components/Header';
 import SidebarModern from '../components/SidebarModern';
+import GlobalLoader from '../components/ui/GlobalLoader';
 
 const AdminLayout = ({ children }) => {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
+      {/* Global Loader */}
+      <GlobalLoader />
+      
       {/* Header */}
       <Header />
 
