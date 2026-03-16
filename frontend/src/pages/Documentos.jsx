@@ -4,7 +4,6 @@
  */
 
 import { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import { useTheme } from '../context/ThemeContext';
 import api from '../api/api';
@@ -211,9 +210,8 @@ const Documentos = () => {
   ];
 
   return (
-    <Layout>
-      <div className="p-4 md:p-8">
-        {/* Encabezado */}
+    <div className="space-y-6">
+      {/* Encabezado */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -353,8 +351,7 @@ const Documentos = () => {
             </div>
           </form>
         </Modal>
-      </div>
-    </Layout>
+    </div>
   );
 };
 

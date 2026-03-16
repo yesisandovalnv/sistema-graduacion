@@ -4,7 +4,6 @@
  */
 
 import { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
 import { useTheme } from '../context/ThemeContext';
 import api from '../api/api';
 import { API_CONFIG } from '../constants/api';
@@ -243,9 +242,8 @@ const Reportes = () => {
   };
 
   return (
-    <Layout>
-      <div className="p-4 md:p-8">
-        {/* Encabezado */}
+    <div className="space-y-6">
+      {/* Encabezado */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Reportes y Análisis
@@ -350,8 +348,7 @@ const Reportes = () => {
             </div>
           </>
         )}
-      </div>
-    </Layout>
+    </div>
   );
 };
 
