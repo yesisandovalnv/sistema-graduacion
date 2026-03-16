@@ -2,9 +2,10 @@
  * Loader Context
  * Manages global HTTP request loader state
  * Tracks active requests and provides show/hide methods
+ * Memoized to prevent unnecessary re-renders and multiple interceptor registration
  */
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback } from 'react';
 
 const LoaderContext = createContext();
 
@@ -14,18 +15,31 @@ const LoaderContext = createContext();
 export const LoaderProvider = ({ children }) => {
   const [activeRequests, setActiveRequests] = useState(0);
 
-  const increment = () => {
+  // Use useCallback to maintain stable function references
+  const increment = useCallback(() => {
     setActiveRequests((prev) => prev + 1);
-  };
+  }, []);
 
-  const decrement = () => {
+  const decrement = useCallback(() => {
     setActiveRequests((prev) => Math.max(0, prev - 1));
-  };
+  }, []);
 
   const isLoading = activeRequests > 0;
 
+  // Memoize context value to prevent unnecessary re-renders
+  // and ensure LoaderInitializer interceptors register only once
+  const value = useMemo(
+    () => ({
+      isLoading,
+      increment,
+      decrement,
+      activeRequests,
+    }),
+    [isLoading, increment, decrement, activeRequests]
+  );
+
   return (
-    <LoaderContext.Provider value={{ isLoading, increment, decrement, activeRequests }}>
+    <LoaderContext.Provider value={value}>
       {children}
     </LoaderContext.Provider>
   );
