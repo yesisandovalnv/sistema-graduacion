@@ -2,8 +2,10 @@
  * Admin Layout Component
  * Wraps protected pages with Header and Sidebar
  * Includes global loader for HTTP requests
+ * Includes global notification system (react-hot-toast)
  */
 
+import { Toaster } from 'react-hot-toast';
 import Header from '../components/Header';
 import SidebarModern from '../components/SidebarModern';
 import GlobalLoader from '../components/ui/GlobalLoader';
@@ -13,6 +15,20 @@ const AdminLayout = ({ children }) => {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Global Loader */}
       <GlobalLoader />
+
+      {/* Global Notifications */}
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        gutter={8}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#333',
+          },
+        }}
+      />
       
       {/* Header */}
       <Header />
