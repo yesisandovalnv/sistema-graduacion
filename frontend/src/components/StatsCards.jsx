@@ -39,7 +39,7 @@ const StatsCards = ({ stats = {} }) => {
     const isPositive = change >= 0;
 
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow overflow-hidden group">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-700/50 hover:shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 overflow-hidden group">
         {/* Borde superior degradado */}
         <div className={`h-1 bg-gradient-to-r ${colorClass}`}></div>
 
