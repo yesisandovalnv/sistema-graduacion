@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import StatsCards from '../components/StatsCards';
 import Charts from '../components/Charts';
 import DataTable from '../components/DataTable';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { useTheme } from '../context/ThemeContext';
 import api from '../api/api';
 import { API_CONFIG } from '../constants/api';
@@ -127,13 +128,9 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Skeleton Loading */}
         {loading && (
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-500 dark:text-gray-400">Cargando datos...</p>
-            </div>
-          </div>
+          <SkeletonLoader />
         )}
 
         {!loading && dashboardStats && (
