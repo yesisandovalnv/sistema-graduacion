@@ -1,4 +1,5 @@
 .env
+.env.*
 venv/
 __pycache__/
 *.pyc
@@ -9,3 +10,6 @@ frontend/node_modules/
 node_modules/
 staticfiles/
 media/
+logs/
+*.log
+*.err
