@@ -3,19 +3,19 @@
  * Wraps protected pages with Navbar and Sidebar
  */
 
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
+import SidebarModern from '../components/SidebarModern';
 
 const AdminLayout = ({ children }) => {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Navbar */}
-      <Navbar />
+      {/* Header */}
+      <Header />
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <Sidebar />
+        <SidebarModern />
 
         {/* Content Area */}
         <main className="flex-1 overflow-auto">

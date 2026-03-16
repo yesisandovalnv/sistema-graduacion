@@ -26,6 +26,11 @@ class Postulante(models.Model):
     def __str__(self):
         return f"{self.nombre} {self.apellido} - {self.codigo_estudiante}"
 
+    def get_full_name(self):
+        nombre = getattr(self, "nombre", "") or ""
+        apellido = getattr(self, "apellido", "") or ""
+        return f"{nombre} {apellido}".strip()
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
@@ -78,13 +83,6 @@ class Postulacion(models.Model):
 
     def __str__(self):
         return f"{self.postulante} - {self.modalidad.nombre} ({self.gestion})"
-
-    def save(self, *args, **kwargs):
-        # Sincroniza el campo legacy con el nuevo campo relacional
-        if self.tutor_ref:
-            self.tutor = str(self.tutor_ref)
-        super().save(*args, **kwargs)
-
 
 class Notificacion(models.Model):
     usuario = models.ForeignKey(

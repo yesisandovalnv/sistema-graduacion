@@ -139,4 +139,4 @@ class PuedeVerDashboardInstitucionalPermission(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return _is_authenticated(user) and user.has_perm('reportes.view_reportegenerado')
+        return _is_authenticated(user) and (user.is_superuser or user.has_perm('reportes.view_reportegenerado'))

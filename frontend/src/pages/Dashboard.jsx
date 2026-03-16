@@ -86,7 +86,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="space-y-6">
         {/* Encabezado */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>

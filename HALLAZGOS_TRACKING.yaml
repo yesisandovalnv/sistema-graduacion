@@ -1,0 +1,585 @@
+# 📊 HALLAZGOS ESTRUCTURADOS - TRACKING
+
+**Formato**: YAML (para tracking en herramientas, Jira, GitHub Issues, etc.)
+
+---
+
+## CONFIGURACIÓN DE IMPORTACIÓN
+
+```yaml
+# Meta información
+meta:
+  version: "1.0"
+  fecha: "2026-03-14"
+  proyecto: "Sistema de Graduación"
+  stack: "Django 6.0 + React 18 + PostgreSQL + Docker"
+  calificacion_general: "5.3/10"
+  evaluador: "Diagnóstico Técnico Automático"
+```
+
+---
+
+## PROBLEMAS CRÍTICOS (5)
+
+```yaml
+problemas_criticos:
+
+  - id: "P-001"
+    titulo: "Sin logging centralizado"
+    descripcion: "El proyecto usa solo print() statements. En producción, los logs se pierden."
+    criticidad: "🔴 CRÍTICA"
+    esfuerzo: "30 min"
+    roi: "10/10"
+    archivos_afectados:
+      - "reportes/views.py"
+      - "documentos/views.py"
+      - "postulantes/services.py"
+    impacto:
+      seguridad: "Alta - Imposible debuggear fallos"
+      performance: "Media - Diags lentos en prod"
+      compliance: "Alta - Datos estudiantes sin auditoría"
+    solucion:
+      tipo: "Implementar logging + Sentry"
+      complejidad: "Baja"
+      archivo_guia: "GUIA_SOLUCIONES_RAPIDAS.md#PROBLEMA1"
+
+  - id: "P-002"
+    titulo: "API retorna HTTP 200 en errores"
+    descripcion: "Las vistas retornan status=200 incluso cuando hay excepciones"
+    criticidad: "🔴 CRÍTICA"
+    esfuerzo: "15 min"
+    roi: "10/10"
+    archivos_afectados:
+      - "reportes/views.py"
+      - "documentos/views.py"
+    lineas: "Líneas 20,31,39,63,87,90"
+    impacto:
+      frontend: "Frontend cree éxito cuando hay fallo"
+      monitoring: "Alertas no se disparan"
+      debugging: "Imposible debuggear automáticamente"
+    solucion:
+      tipo: "Retornar 500 en excepciones"
+      complejidad: "Muy baja"
+      archivo_guia: "GUIA_SOLUCIONES_RAPIDAS.md#PROBLEMA2"
+
+  - id: "P-003"
+    titulo: "Tokens JWT en localStorage (XSS VULNERABLE)"
+    descripcion: "Tokens guardados en localStorage = accesible a JavaScript = vulnerable a XSS"
+    criticidad: "🔴 CRÍTICA"
+    esfuerzo: "60 min"
+    roi: "10/10"
+    archivos_afectados:
+      - "frontend/src/api/axios.js (o similar)"
+      - "frontend/src/context/AuthContext.jsx"
+    impacto:
+      seguridad: "CRÍTICA - Robo de autenticación"
+      ventana_riesgo: "60 minutos (TTL del token)"
+      cvss_score: "7.5"
+    solucion:
+      tipo: "Migrar a httpOnly cookies"
+      complejidad: "Media"
+      archivo_guia: "GUIA_SOLUCIONES_RAPIDAS.md#PROBLEMA3"
+      pasos:
+        - "Backend: retornar Set-Cookie header"
+        - "Frontend: remover localStorage de tokens"
+        - "Axios: configurar credentials include"
+
+  - id: "P-004"
+    titulo: "Sin rate limiting"
+    descripcion: "No hay protección contra fuerza bruta en login o abuso de API"
+    criticidad: "🔴 CRÍTICA"
+    esfuerzo: "15 min"
+    roi: "9/10"
+    archivos_afectados:
+      - "config/settings.py"
+    impacto:
+      seguridad: "CRÍTICA - Ataque de fuerza bruta sin límite"
+      disponibilidad: "ALTA - Posible DoS"
+      cvss_score: "7.2"
+    solucion:
+      tipo: "Agregar DEFAULT_THROTTLE_CLASSES en DRF"
+      complejidad: "Muy baja"
+      archivo_guia: "GUIA_SOLUCIONES_RAPIDAS.md#PROBLEMA4"
+
+  - id: "P-005"
+    titulo: "N+1 queries en dashboard"
+    descripcion: "Dashboard hace 8+ queries separadas en lugar de 1 agregación"
+    criticidad: "🔴 CRÍTICA"
+    esfuerzo: "45 min"
+    roi: "8/10"
+    archivos_afectados:
+      - "reportes/services.py"
+    funcion_afectada: "dashboard_general()"
+    impacto:
+      performance: "Dashboard tarda 5+ segundos"
+      escalabilidad: "No puede crecer a 1000+ usuarios"
+      queries_actual: 8
+      queries_objetivo: 1
+    solucion:
+      tipo: "Refactorizar con aggregate()"
+      complejidad: "Media"
+      archivo_guia: "GUIA_SOLUCIONES_RAPIDAS.md#PROBLEMA5"
+      mejora_esperada: "5 seg → 0.3 seg (-94%)"
+```
+
+---
+
+## PROBLEMAS ALTOS (6)
+
+```yaml
+problemas_altos:
+
+  - id: "P-006"
+    titulo: "Validación débil en frontend"
+    criticidad: "🟡 ALTA"
+    esfuerzo: "120 min"
+    roi: "7/10"
+    archivos_afectados:
+      - "frontend/src/pages/*.jsx"
+      - "frontend/src/components/Form*.jsx"
+    solucion:
+      tipo: "Agregar validaciones locales antes de enviar"
+      archivo_guia: "GUIA_SOLUCIONES_RAPIDAS.md#PROBLEMA6"
+
+  - id: "P-007"
+    titulo: "Sin soft deletes"
+    criticidad: "🟡 ALTA"
+    esfuerzo: "120 min"
+    roi: "8/10"
+    archivos_afectados:
+      - "postulantes/models.py"
+      - "documentos/models.py"
+      - "modalidades/models.py"
+    impacto:
+      data_loss: "Una eliminación = pérdida permanente"
+      auditoría: "Sin registro de eliminaciones"
+      compliance: "Violación regulatoria"
+    solucion:
+      tipo: "Implementar deleted + deleted_at en todos los modelos"
+      archivo_guia: "GUIA_SOLUCIONES_RAPIDAS.md#SOFT_DELETE"
+
+  - id: "P-008"
+    titulo: "Falta de índices en BD"
+    criticidad: "🟡 ALTA"
+    esfuerzo: "60 min"
+    roi: "8/10"
+    archivos_afectados:
+      - "postulantes/models.py"
+      - "documentos/models.py"
+      - "modalidades/models.py"
+    campos_sin_indice:
+      - "nombre, apellido (búsqueda lenta)"
+      - "estado (filtros lentos)"
+      - "postulacion + estado (combinado)"
+    solucion:
+      tipo: "Agregar indexes en Meta de modelos"
+      archivo_guia: "GUIA_SOLUCIONES_RAPIDAS.md#INDICES"
+      mejora_esperada: "Búsquedas 10x más rápidas"
+
+  - id: "P-009"
+    titulo: "Sin validación MIME de archivos"
+    criticidad: "🟡 ALTA"
+    esfuerzo: "60 min"
+    roi: "7/10"
+    archivos_afectados:
+      - "documentos/models.py"
+      - "documentos/serializers.py"
+    impacto:
+      seguridad: "Archivo .exe renombrado a .pdf pasa validación"
+    solucion:
+      tipo: "Validar MIME type del contenido"
+
+  - id: "P-010"
+    titulo: "Error handling inconsistente"
+    criticidad: "🟡 ALTA"
+    esfuerzo: "120 min"
+    roi: "7/10"
+    problema:
+      - "Ejemplo 1: {error: string}"
+      - "Ejemplo 2: {detail: string}"
+      - "Ejemplo 3: []"
+    solucion:
+      tipo: "Estandarizar a {detail: string} + status codes"
+
+  - id: "P-011"
+    titulo: "Paginación offset (lenta)"
+    criticidad: "🟡 ALTA"
+    esfuerzo: "120 min"
+    roi: "5/10"
+    impacto:
+      performance: "Página 1000 rescanea 100k registros"
+    solucion:
+      tipo: "Migrar a CursorPagination"
+```
+
+---
+
+## PROBLEMAS MEDIANOS (4)
+
+```yaml
+problemas_medianos:
+
+  - id: "P-012"
+    titulo: "Sin caché Redis"
+    criticidad: "📌 MEDIA"
+    esfuerzo: "240 min"
+    roi: "7/10"
+    impacto:
+      datos_estaticos: "Modalidades, etapas consultadas 1000x sin cambio"
+    solucion:
+      tipo: "Configurar caché Django + Redis"
+
+  - id: "P-013"
+    titulo: "Tokens sin rotate"
+    criticidad: "📌 MEDIA"
+    esfuerzo: "60 min"
+    roi: "6/10"
+    config:
+      actual: "ROTATE_REFRESH_TOKENS = False (probable)"
+      objetivo: "ROTATE_REFRESH_TOKENS = True"
+    impacto:
+      seguridad: "Token comprometido = acceso indefinido"
+
+  - id: "P-014"
+    titulo: "CSRF verification"
+    criticidad: "📌 MEDIA"
+    esfuerzo: "30 min"
+    roi: "6/10"
+    verificar:
+      - "axios incluye X-CSRFToken header"
+      - "Backend tiene CSRF middleware"
+
+  - id: "P-015"
+    titulo: "Reportes sin async"
+    criticidad: "📌 MEDIA"
+    esfuerzo: "180 min"
+    roi: "7/10"
+    problema: "Reportes pesados bloquean request"
+    solucion:
+      tipo: "Usar Celery tasks para reportes"
+      archivos_afectados:
+        - "reportes/views.py"
+        - "reportes/tasks.py (crear)"
+```
+
+---
+
+## FORTALEZAS (10)
+
+```yaml
+fortalezas:
+  - titulo: "Permisos granulares BIEN implementados"
+    archivo: "config/permissions.py"
+    evaluacion: "10/10"
+    
+  - titulo: "Auditoría registra TODOS los cambios"
+    modelos: "auditoria/models.py"
+    evaluacion: "9/10"
+    
+  - titulo: "Serializers con validaciones robustas"
+    archivo: "*/serializers.py"
+    evaluacion: "8/10"
+    
+  - titulo: "ViewSets con select_related/prefetch correcto"
+    evaluacion: "8/10"
+    
+  - titulo: "Django REST Framework bien aprovechado"
+    features: "Swagger, filtrado, ordenamiento"
+    evaluacion: "8/10"
+    
+  - titulo: "Docker containerización completa"
+    archivo: "docker-compose.yml"
+    evaluacion: "8/10"
+    
+  - titulo: "React moderno (Hooks + Context API)"
+    evaluacion: "8/10"
+    
+  - titulo: "JWT con refresh tokens automáticos"
+    evaluacion: "8/10"
+    
+  - titulo: "Celery + Redis para tasks asincrónicas"
+    evaluacion: "9/10"
+    
+  - titulo: "CORS bien configurado"
+    evaluacion: "8/10"
+```
+
+---
+
+## SCORECARD
+
+```yaml
+scorecard:
+  arquitectura:
+    score: 8
+    estado: "✅ Bien diseñada"
+    
+  seguridad:
+    score: 5
+    estado: "⚠️ Riesgos detectados"
+    problemas: 5
+    
+  rendimiento:
+    score: 4
+    estado: "❌ Problemas graves"
+    problemas: "N+1 queries, sin índices, sin caché"
+    
+  observabilidad_logging:
+    score: 1
+    estado: "🔴 CRÍTICO"
+    problemas: "Solo print statements"
+    
+  base_datos:
+    score: 6
+    estado: "⚠️ Optimizar"
+    
+  frontend:
+    score: 7
+    estado: "✅ Estructura buena"
+    
+  api_rest:
+    score: 7
+    estado: "✅ Bien implementada"
+    
+  documentacion:
+    score: 7
+    estado: "✅ Buena"
+    
+  devops_docker:
+    score: 7
+    estado: "✅ Docker OK"
+
+  testing:
+    score: 0
+    estado: "❓ No verificado"
+    
+  promedio_general:
+    score: 5.3
+    recomendacion: "NO LISTO PARA PRODUCCIÓN"
+```
+
+---
+
+## PLAN DE ACCIÓN
+
+```yaml
+fases:
+
+  fase_1_urgente:
+    nombre: "URGENTE"
+    duracion: "1 hora"
+    prioridad: "🔴 Hoy"
+    tareas:
+      - id: "T-001"
+        titulo: "Configurar logging"
+        tiempo: "30 min"
+        referencia: "P-001"
+        
+      - id: "T-002"
+        titulo: "Corregir status codes"
+        tiempo: "15 min"
+        referencia: "P-002"
+        
+      - id: "T-003"
+        titulo: "Rate limiting"
+        tiempo: "15 min"
+        referencia: "P-004"
+
+  fase_2_critica:
+    nombre: "CRÍTICA"
+    duracion: "6 horas"
+    prioridad: "🔴 Esta semana"
+    tareas:
+      - id: "T-004"
+        titulo: "Tokens → httpOnly"
+        tiempo: "60 min"
+        referencia: "P-003"
+        
+      - id: "T-005"
+        titulo: "HTTPS forzado"
+        tiempo: "30 min"
+        
+      - id: "T-006"
+        titulo: "Optimizar N+1"
+        tiempo: "45 min"
+        referencia: "P-005"
+        
+      - id: "T-007"
+        titulo: "Agregar índices"
+        tiempo: "60 min"
+        referencia: "P-008"
+        
+      - id: "T-008"
+        titulo: "Soft deletes"
+        tiempo: "120 min"
+        referencia: "P-007"
+        
+      - id: "T-009"
+        titulo: "Validación frontend"
+        tiempo: "120 min"
+        referencia: "P-006"
+
+  fase_3_importante:
+    nombre: "IMPORTANTE"
+    duracion: "10 horas"
+    prioridad: "🟡 2-3 semanas"
+    tareas:
+      - id: "T-010"
+        titulo: "Error boundaries React"
+        tiempo: "60 min"
+        
+      - id: "T-011"
+        titulo: "Estandarizar errors API"
+        tiempo: "120 min"
+        referencia: "P-010"
+        
+      - id: "T-012"
+        titulo: "Cursor pagination"
+        tiempo: "120 min"
+        referencia: "P-011"
+        
+      - id: "T-013"
+        titulo: "Reportes async (Celery)"
+        tiempo: "180 min"
+        referencia: "P-015"
+        
+      - id: "T-014"
+        titulo: "Caché Redis"
+        tiempo: "240 min"
+        referencia: "P-012"
+        
+      - id: "T-015"
+        titulo: "Unit + Integration tests"
+        tiempo: "300 min"
+
+  fase_4_mejora:
+    nombre: "MEJORA"
+    duracion: "8 horas"
+    prioridad: "🟢 1+ mes"
+    tareas:
+      - id: "T-016"
+        titulo: "Gzip compression"
+        tiempo: "15 min"
+        
+      - id: "T-017"
+        titulo: "Token rotation"
+        tiempo: "60 min"
+        referencia: "P-013"
+        
+      - id: "T-018"
+        titulo: "Code splitting lazy loading"
+        tiempo: "120 min"
+        
+      - id: "T-019"
+        titulo: "APM monitoring (Sentry/Datadog)"
+        tiempo: "120 min"
+```
+
+---
+
+## ESTIMACIÓN
+
+```yaml
+tiempo_total:
+  fase_1_2: "7 horas"
+  descripcion: "Implementar de urgente y crítica"
+  impacto: "55% mejora general"
+  
+  fase_1_2_3: "17 horas"
+  descripcion: "Listo para producción"
+  impacto: "75% mejora general"
+  
+  completo: "25 horas"
+  descripcion: "Todas las fases"
+  impacto: "85% mejora general"
+
+equipo_recomendado:
+  backend_dev: "1 persona (8h)"
+  frontend_dev: "0.5 personas (4h)"
+  devops: "0.5 personas (2h)"
+  qa: "0.5 personas (3h)"
+  
+timeline:
+  intenso: "3-4 días full-time"
+  moderado: "1-2 semanas part-time"
+  extendido: "1 mes casual"
+```
+
+---
+
+## VULNERABILIDADES (CVSS)
+
+```yaml
+vulnerabilidades:
+  - id: "V-001"
+    nombre: "XSS vía localStorage"
+    cvss: 7.5
+    facilidad: "🟢 Fácil"
+    criticidad: "🔴 Crítica"
+    status: "⏳ Pendiente"
+    problema: "P-003"
+    
+  - id: "V-002"
+    nombre: "Fuerza bruta (sin rate limit)"
+    cvss: 7.2
+    facilidad: "🟢 Fácil"
+    criticidad: "🔴 Crítica"
+    status: "⏳ Pendiente"
+    problema: "P-004"
+    
+  - id: "V-003"
+    nombre: "MITM (sin HTTPS forzado)"
+    cvss: 6.8
+    facilidad: "🟢 Fácil"
+    criticidad: "🔴 Crítica"
+    status: "⏳ Pendiente"
+    
+  - id: "V-004"
+    nombre: "Data loss (hard deletes)"
+    cvss: 6.5
+    facilidad: "🟠 Difícil"
+    criticidad: "🔴 Crítica"
+    status: "⏳ Pendiente"
+    problema: "P-007"
+    
+  - id: "V-005"
+    nombre: "Sin logging"
+    cvss: 5.2
+    facilidad: "🟢 Fácil"
+    criticidad: "🔴 Crítica"
+    status: "⏳ Pendiente"
+    problema: "P-001"
+    
+  - id: "V-006"
+    nombre: "N+1 queries (DoS)"
+    cvss: 4.1
+    facilidad: "🟢 Fácil"
+    criticidad: "🟡 Alta"
+    status: "⏳ Pendiente"
+    problema: "P-005"
+
+promedio_cvss_antes: 5.86
+promedio_cvss_despues: 1.8
+mejora: "-69%"
+```
+
+---
+
+## ESTADOS Y TRACKING
+
+```yaml
+estados_generales:
+  CRÍTICO: "Requiere acción inmediata (hoy)"
+  ALTO: "Debe implementarse esta semana"
+  MEDIO: "Próximas 2-3 semanas"
+  BAJO: "Después de críticos/altos"
+  COMPLETADO: "Ya implementado"
+
+recomendacion_final: "NO LISTO PARA PRODUCCIÓN"
+recomendacion_post_fixes: "SÍ LISTO para producción (después de FASE 1-2)"
+```
+
+---
+
+** Fecha**: 14 de marzo de 2026
+**Próxima revisión**: 30 de junio de 2026

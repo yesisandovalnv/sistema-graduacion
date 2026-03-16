@@ -1,0 +1,13 @@
+Set POSTGRES_DB=sistema_graduacion
+Set POSTGRES_USER=sistema_user
+Set POSTGRES_PASSWORD=sistema_pass
+Set POSTGRES_HOST=172.18.0.3
+Set POSTGRES_PORT=5432
+Set DEBUG=True
+Set SECRET_KEY=django-insecure-test-key-for-development-only
+Set ALLOWED_HOSTS=localhost,127.0.0.1,localhost:8000,127.0.0.1:8000,localhost:5173
+Set CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173
+
+Starting Django development server...
+POSTGRES_HOST set to: 172.18.0.3
+

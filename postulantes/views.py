@@ -1,32 +1,58 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from config.permissions import PostulanteRolePermission, PuedeAvanzarEtapaPermission, PuedeAprobarDocumentosPermission
+from config.permissions import (
+    PostulanteRolePermission,
+    PostulacionRolePermission,
+    PuedeAvanzarEtapaPermission,
+    PuedeAprobarDocumentosPermission,
+    can_view_all_postulantes,
+    can_view_all_postulaciones,
+)
+from auditoria.models import AuditoriaLog
+from auditoria.serializers import AuditoriaLogSerializer
 from documentos.models import DocumentoPostulacion
 from modalidades.models import Etapa
 from .models import ComentarioInterno, Notificacion, Postulacion, Postulante
 from .serializers import ComentarioInternoSerializer, EtapaSerializer, NotificacionSerializer, PostulacionSerializer, PostulanteSerializer
 from .services import avanzar_postulacion
+from .tasks import limpiar_notificaciones_antiguas
 from reportes.services import dashboard_general, generar_pdf_dashboard
 
 
+# FASE 3: Custom Pagination with max_page_size limit
+class CustomPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class PostulanteViewSet(viewsets.ModelViewSet):
-    queryset = Postulante.objects.select_related('usuario', 'carrera_ref', 'carrera_ref__facultad').all()
+    queryset = Postulante.objects.select_related('usuario').order_by('id')
     serializer_class = PostulanteSerializer
+    pagination_class = CustomPagination  # FASE 3: Applied
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['usuario__username', 'nombre', 'apellido', 'ci', 'codigo_estudiante']
-    ordering_fields = ['creado_en', 'codigo_estudiante', 'nombre', 'apellido']
-    ordering = ['-creado_en']
+    ordering_fields = ['id', 'creado_en', 'codigo_estudiante', 'nombre', 'apellido']
+    ordering = ['id']
     permission_classes = [PostulanteRolePermission]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if can_view_all_postulantes(self.request.user):
+            return queryset
+        return queryset.filter(usuario=self.request.user)
 
 
 class PostulacionViewSet(viewsets.ModelViewSet):
-    queryset = Postulacion.objects.select_related('postulante', 'modalidad', 'tutor_ref').all()
+    queryset = Postulacion.objects.select_related('postulante', 'modalidad').all()
     serializer_class = PostulacionSerializer
+    pagination_class = CustomPagination  # FASE 3: Applied
     # Configuración de filtros
     filter_backends = [
         DjangoFilterBackend,
@@ -41,12 +67,16 @@ class PostulacionViewSet(viewsets.ModelViewSet):
         'postulante__usuario__username',
         'postulante__nombre',
         'postulante__apellido',
-        'tutor_ref__nombre',
-        'tutor_ref__apellido',
     ]
     ordering_fields = ['fecha_postulacion', 'gestion']
     ordering = ['-fecha_postulacion']
-    permission_classes = [PostulanteRolePermission]
+    permission_classes = [PostulacionRolePermission]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if can_view_all_postulaciones(self.request.user):
+            return queryset
+        return queryset.filter(postulante__usuario=self.request.user)
 
     @action(
         detail=True,

@@ -1,5 +1,6 @@
 from rest_framework import filters, viewsets
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.conf import settings
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,13 +18,21 @@ from .models import DocumentoPostulacion, TipoDocumento
 from .serializers import DocumentoPostulacionSerializer, TipoDocumentoSerializer
 
 
+# FASE 3: Custom Pagination with max_page_size limit
+class CustomPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class DocumentoPostulacionViewSet(viewsets.ModelViewSet):
     queryset = DocumentoPostulacion.objects.select_related(
-        'postulacion',
+        'postulacion__postulante__usuario',  # FASE 2B: Complete chain (N+1 fix)
         'tipo_documento',
         'revisado_por',
     ).all()
     serializer_class = DocumentoPostulacionSerializer
+    pagination_class = CustomPagination  # FASE 3: Applied
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['postulacion', 'estado', 'tipo_documento']
     search_fields = ['postulacion__postulante__usuario__username', 'tipo_documento__nombre']
@@ -51,6 +60,9 @@ class DocumentoPostulacionViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         instancia_anterior = self.get_object()
+        if instancia_anterior.estado == 'aprobado':
+            raise ValidationError('No se puede modificar un documento aprobado.')
+
         estado_anterior = instancia_anterior.estado
         nuevo_estado = serializer.validated_data.get('estado', estado_anterior)
 

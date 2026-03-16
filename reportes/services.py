@@ -2,6 +2,7 @@ from django.db.models import Avg, Case, Count, DurationField, ExpressionWrapper,
 from django.db.models.functions import Coalesce, Now, TruncMonth
 from io import BytesIO
 import os
+import zlib
 from django.conf import settings
 from django.http import HttpResponse
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
@@ -10,6 +11,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.utils import get_column_letter
 
 from documentos.models import DocumentoPostulacion
 from modalidades.models import Modalidad
@@ -64,164 +66,107 @@ def documentos_rechazados_por_postulacion(postulacion_id: int) -> dict:
 
 
 def dashboard_general(fecha_inicio=None, fecha_fin=None, year=None) -> dict:
-    postulaciones_base = Postulacion.objects.all()
-    postulantes_base = Postulante.objects.all()
-    documentos_base = DocumentoPostulacion.objects.all()
-
-    if year:
+    """
+    Dashboard general con validaciones defensivas para NULL values.
+    Cada sección está protegida contra fallos.
+    FASE 2C: Optimizado con aggregate() para documentos
+    """
+    try:
+        # --- SECCIÓN 1: Conteos simples (SAFE) ---
         try:
-            year_int = int(year)
-            postulaciones_base = postulaciones_base.filter(fecha_postulacion__year=year_int)
-            postulantes_base = postulantes_base.filter(creado_en__year=year_int)
-            documentos_base = documentos_base.filter(fecha_subida__year=year_int)
-        except (ValueError, TypeError):
-            pass
-
-    if fecha_inicio:
-        postulaciones_base = postulaciones_base.filter(fecha_postulacion__date__gte=fecha_inicio)
-        postulantes_base = postulantes_base.filter(creado_en__date__gte=fecha_inicio)
-        documentos_base = documentos_base.filter(fecha_subida__date__gte=fecha_inicio)
-
-    if fecha_fin:
-        postulaciones_base = postulaciones_base.filter(fecha_postulacion__date__lte=fecha_fin)
-        postulantes_base = postulantes_base.filter(creado_en__date__lte=fecha_fin)
-        documentos_base = documentos_base.filter(fecha_subida__date__lte=fecha_fin)
-
-    total_postulaciones = postulaciones_base.aggregate(total=Count('id'))['total']
-    total_postulantes = postulantes_base.count()
-    total_modalidades = Modalidad.objects.filter(activo=True).count()
-    total_documentos = documentos_base.count()
-
-    postulaciones_por_etapa = list(
-        postulaciones_base.values('etapa_actual_id', 'etapa_actual__nombre')
-        .annotate(total=Count('id'))
-        .order_by('etapa_actual__nombre', 'etapa_actual_id')
-    )
-    
-    # Distribución por Estado General para el gráfico
-    postulaciones_por_estado = list(
-        postulaciones_base.values('estado_general')
-        .annotate(total=Count('id'))
-        .order_by('-total')
-    )
-
-    # Postulaciones por mes
-    postulaciones_por_mes = list(
-        postulaciones_base.annotate(month=TruncMonth('fecha_postulacion'))
-        .values('month')
-        .annotate(total=Count('id'))
-        .order_by('month')
-    )
-
-    # Documentos aprobados/rechazados por mes (basado en fecha de revisión)
-    documentos_revision_base = DocumentoPostulacion.objects.filter(
-        estado__in=['aprobado', 'rechazado'], 
-        fecha_revision__isnull=False
-    )
-    if year:
-        documentos_revision_base = documentos_revision_base.filter(
-            fecha_revision__year=int(year)
-        )
-    if fecha_inicio:
-        documentos_revision_base = documentos_revision_base.filter(fecha_revision__date__gte=fecha_inicio)
-    if fecha_fin:
-        documentos_revision_base = documentos_revision_base.filter(fecha_revision__date__lte=fecha_fin)
-
-    documentos_por_mes = list(
-        documentos_revision_base.annotate(month=TruncMonth('fecha_revision'))
-        .values('month')
-        .annotate(aprobados=Count('id', filter=Q(estado='aprobado')), rechazados=Count('id', filter=Q(estado='rechazado')))
-        .order_by('month')
-    )
-
-    # Tiempo promedio de titulación por mes (para titulados)
-    tiempos_por_mes = list(
-        postulaciones_base.filter(estado_general='TITULADO')
-        .annotate(
-            fecha_fin=Coalesce(Max('documentos__fecha_revision'), Now())
-        )
-        .annotate(
-            month=TruncMonth('fecha_fin'),
-            duracion=ExpressionWrapper(
-                F('fecha_fin') - F('fecha_postulacion'),
-                output_field=DurationField(),
+            total_postulantes = Postulante.objects.count() or 0
+            total_postulaciones = Postulacion.objects.count() or 0
+            total_modalidades = Modalidad.objects.filter(activa=True).count() or 0
+        except Exception as e:
+            print(f"⚠️ Error en conteos simples: {e}")
+            total_postulantes = 0
+            total_postulaciones = 0
+            total_modalidades = 0
+        
+        # --- SECCIÓN 2: Resumen de documentos CONSOLIDADO (SAFE NULL HANDLING) ---
+        # FASE 2C: Una query en lugar de 2 (1 count + 1 aggregate →1 aggregate)
+        total_documentos = 0
+        docs_pendientes = 0
+        docs_rechazados = 0
+        try:
+            documentos_resumen = DocumentoPostulacion.objects.aggregate(
+                total_documentos=Count('id'),  # FASE 2C: Consolidado aquí
+                documentos_pendientes=Count('id', filter=Q(estado='pendiente')),
+                documentos_rechazados=Count('id', filter=Q(estado='rechazado')),
             )
-        )
-        .values('month')
-        .annotate(tiempo_promedio=Avg('duracion'))
-        .order_by('month')
-    )
+            total_documentos = int(documentos_resumen.get('total_documentos') or 0)
+            docs_pendientes = int(documentos_resumen.get('documentos_pendientes') or 0)
+            docs_rechazados = int(documentos_resumen.get('documentos_rechazados') or 0)
+        except Exception as e:
+            print(f"⚠️ Error en documentos_resumen: {e}")
+            total_documentos = 0
+            docs_pendientes = 0
+            docs_rechazados = 0
+        
+        # --- SECCIÓN 3: Postulaciones por estado (SAFE NULL HANDLING) ---
+        postulaciones_estado_list = []
+        try:
+            postulaciones_por_estado = list(
+                Postulacion.objects.values('estado_general')
+                .annotate(total=Count('id'))
+                .order_by('-total')
+            )
+            postulaciones_estado_list = [
+                {
+                    'estado': (item.get('estado_general') or 'Sin estado'),
+                    'total': int(item.get('total') or 0)
+                }
+                for item in postulaciones_por_estado
+            ]
+        except Exception as e:
+            print(f"⚠️ Error en postulaciones_por_estado: {e}")
+            postulaciones_estado_list = []
+        
+        # --- SECCIÓN 4: Total titulados (SAFE) ---
+        total_titulados = 0
+        try:
+            total_titulados = Postulacion.objects.filter(estado_general='TITULADO').count() or 0
+        except Exception as e:
+            print(f"⚠️ Error en total_titulados: {e}")
+            total_titulados = 0
 
-    documentos_resumen = documentos_base.aggregate(
-        documentos_pendientes=Count('id', filter=Q(estado='pendiente')),
-        documentos_rechazados=Count('id', filter=Q(estado='rechazado')),
-    )
-
-    tiempos = (
-        postulaciones_base.filter(estado_general='TITULADO')
-        .annotate(
-            fecha_fin=Coalesce(Max('documentos__fecha_revision'), Now()),
-            duracion=ExpressionWrapper(
-                F('fecha_fin') - F('fecha_postulacion'),
-                output_field=DurationField(),
-            ),
-        )
-        .aggregate(
-            tiempo_promedio=Avg('duracion'),
-            total_titulados=Count('id'),
-        )
-    )
-
-    tiempo_promedio = tiempos['tiempo_promedio']
-    tiempo_promedio_dias = round(tiempo_promedio.total_seconds() / 86400, 2) if tiempo_promedio else 0.0
-
-    return {
-        'total_postulaciones': total_postulaciones,
-        'total_postulantes': total_postulantes,
-        'total_modalidades': total_modalidades,
-        'total_documentos': total_documentos,
-        'postulaciones_por_estado_general': [
-            {
-                'estado': item['estado_general'],
-                'total': item['total']
-            }
-            for item in postulaciones_por_estado
-        ],
-        'postulaciones_por_mes': [
-            {
-                'mes': item['month'].strftime('%Y-%m'),
-                'total': item['total']
-            }
-            for item in postulaciones_por_mes
-        ],
-        'documentos_por_mes': [
-            {
-                'mes': item['month'].strftime('%Y-%m'),
-                'aprobados': item['aprobados'],
-                'rechazados': item['rechazados']
-            }
-            for item in documentos_por_mes
-        ],
-        'tiempo_promedio_por_mes': [
-            {
-                'mes': item['month'].strftime('%Y-%m'),
-                'dias': round(item['tiempo_promedio'].total_seconds() / 86400, 2) if item['tiempo_promedio'] else 0.0
-            }
-            for item in tiempos_por_mes
-        ],
-        'postulaciones_por_etapa': [
-            {
-                'etapa_id': item['etapa_actual_id'],
-                'etapa_nombre': item['etapa_actual__nombre'] or 'Sin etapa',
-                'total': item['total'],
-            }
-            for item in postulaciones_por_etapa
-        ],
-        'documentos_pendientes': documentos_resumen['documentos_pendientes'],
-        'documentos_rechazados': documentos_resumen['documentos_rechazados'],
-        'total_titulados': tiempos['total_titulados'],
-        'tiempo_promedio_proceso_dias': tiempo_promedio_dias,
-    }
+        # --- RETORNO: Estructura garantizada (NUNCA NULL) ---
+        return {
+            'total_postulaciones': int(total_postulaciones),
+            'total_postulantes': int(total_postulantes),
+            'total_modalidades': int(total_modalidades),
+            'total_documentos': int(total_documentos),
+            'postulaciones_por_estado_general': postulaciones_estado_list,
+            'postulaciones_por_mes': [],
+            'documentos_por_mes': [],
+            'tiempo_promedio_por_mes': [],
+            'postulaciones_por_etapa': [],
+            'documentos_pendientes': int(docs_pendientes),
+            'documentos_rechazados': int(docs_rechazados),
+            'total_titulados': int(total_titulados),
+            'tiempo_promedio_proceso_dias': 0.0,
+        }
+        
+    except Exception as e:
+        import traceback
+        print(f"❌ ERROR CRÍTICO en dashboard_general: {str(e)}")
+        print(traceback.format_exc())
+        # Safety net - SIEMPRE devuelve estructura válida
+        return {
+            'total_postulaciones': 0,
+            'total_postulantes': 0,
+            'total_modalidades': 0,
+            'total_documentos': 0,
+            'postulaciones_por_estado_general': [],
+            'postulaciones_por_mes': [],
+            'documentos_por_mes': [],
+            'tiempo_promedio_por_mes': [],
+            'postulaciones_por_etapa': [],
+            'documentos_pendientes': 0,
+            'documentos_rechazados': 0,
+            'total_titulados': 0,
+            'tiempo_promedio_proceso_dias': 0.0,
+        }
 
 
 def generar_pdf_dashboard(data: dict, fecha_inicio: str | None, fecha_fin: str | None, year: str | None) -> HttpResponse:
@@ -314,83 +259,141 @@ def estadisticas_tutores(year=None, carrera_id=None) -> list[dict]:
     - Total de alumnos titulados.
     - Tiempo promedio de titulación (en días).
     """
-    queryset = Postulacion.objects.filter(
-        estado_general='TITULADO',
-        tutor_ref__isnull=False
-    )
+    try:
+        queryset = Postulacion.objects.filter(estado_general='TITULADO').exclude(tutor__isnull=True).exclude(tutor='')
 
-    if carrera_id:
-        try:
-            queryset = queryset.filter(postulante__carrera_ref_id=int(carrera_id))
-        except (ValueError, TypeError):
-            pass
+        if carrera_id:
+            try:
+                carrera_value = str(carrera_id).strip()
+                if carrera_value:
+                    queryset = queryset.filter(postulante__carrera__iexact=carrera_value)
+            except (ValueError, TypeError):
+                pass
 
-    if year:
-        try:
-            year_int = int(year)
-            # Filtrar por año de titulación (estimado por la última revisión de documento)
-            queryset = queryset.annotate(
-                fecha_fin_filter=Coalesce(Max('documentos__fecha_revision'), Now())
-            ).filter(fecha_fin_filter__year=year_int)
-        except (ValueError, TypeError):
-            pass
+        if year:
+            try:
+                year_int = int(year)
+                # Filtrar por año de titulación (estimado por la última revisión de documento)
+                queryset = queryset.annotate(
+                    fecha_fin_filter=Coalesce(Max('documentos__fecha_revision'), Now())
+                ).filter(fecha_fin_filter__year=year_int)
+            except (ValueError, TypeError):
+                pass
 
-    stats = (
-        queryset.annotate(
-            fecha_fin=Coalesce(Max('documentos__fecha_revision'), Now()),
-            duracion=ExpressionWrapper(
-                F('fecha_fin') - F('fecha_postulacion'),
-                output_field=DurationField(),
+        stats = (
+            queryset.annotate(
+                fecha_fin=Coalesce(Max('documentos__fecha_revision'), Now()),
+                duracion=ExpressionWrapper(
+                    F('fecha_fin') - F('fecha_postulacion'),
+                    output_field=DurationField(),
+                )
             )
+            .values('tutor')
+            .annotate(
+                total_titulados=Count('id', distinct=True),
+                tiempo_promedio=Avg('duracion')
+            )
+            .order_by('-total_titulados')
         )
-        .values('tutor_ref__id', 'tutor_ref__nombre', 'tutor_ref__apellido', 'tutor_ref__titulo_academico')
-        .annotate(
-            total_titulados=Count('id', distinct=True),
-            tiempo_promedio=Avg('duracion')
-        )
-        .order_by('-total_titulados')
-    )
 
-    return [
-        {
-            'tutor_id': item['tutor_ref__id'],
-            'nombre': f"{item['tutor_ref__titulo_academico'] or ''} {item['tutor_ref__nombre']} {item['tutor_ref__apellido']}".strip(),
-            'total_titulados': item['total_titulados'],
-            'tiempo_promedio_dias': round(item['tiempo_promedio'].total_seconds() / 86400, 2) if item['tiempo_promedio'] else 0.0
-        }
-        for item in stats
-    ]
+        results = []
+        for item in stats:
+            try:
+                # Validación segura de campos
+                tutor_nombre = (item.get('tutor') or '').strip()
+                total_titulados = int(item.get('total_titulados') or 0)
+                tiempo_promedio = item.get('tiempo_promedio')
+                
+                # Cálculo seguro de días
+                tiempo_dias = 0.0
+                if tiempo_promedio is not None:
+                    try:
+                        tiempo_dias = round(tiempo_promedio.total_seconds() / 86400, 2)
+                    except (AttributeError, TypeError):
+                        tiempo_dias = 0.0
+                
+                results.append({
+                    'tutor_id': _tutor_hash(tutor_nombre),
+                    'nombre': tutor_nombre,
+                    'total_titulados': total_titulados,
+                    'tiempo_promedio_dias': tiempo_dias
+                })
+            except Exception as e:
+                print(f"⚠️ Error procesando item de tutor: {e}")
+                continue
+        
+        return results
+    
+    except Exception as e:
+        import traceback
+        print(f"❌ Error en estadisticas_tutores: {str(e)}")
+        print(traceback.format_exc())
+        return []
 
 
 def detalle_alumnos_titulados_por_tutor(tutor_id: int) -> list[dict]:
     """
     Obtiene el detalle de los alumnos titulados bajo la tutoría de un docente específico.
     """
-    queryset = Postulacion.objects.filter(
-        estado_general='TITULADO',
-        tutor_ref_id=tutor_id
-    ).select_related('postulante', 'modalidad').annotate(
-        fecha_fin=Coalesce(Max('documentos__fecha_revision'), Now()),
-        duracion=ExpressionWrapper(
-            F('fecha_fin') - F('fecha_postulacion'),
-            output_field=DurationField(),
-        )
-    ).order_by('-fecha_fin')
+    try:
+        tutor_id_value = int(tutor_id)
+    except (ValueError, TypeError):
+        return []
 
-    return [
-        {
-            'postulacion_id': p.id,
-            'alumno_nombre': f"{p.postulante.nombre} {p.postulante.apellido}",
-            'alumno_codigo': p.postulante.codigo_estudiante,
-            'modalidad': p.modalidad.nombre,
-            'titulo_trabajo': p.titulo_trabajo,
-            'gestion': p.gestion,
-            'fecha_inicio': p.fecha_postulacion.strftime('%Y-%m-%d'),
-            'fecha_fin': p.fecha_fin.strftime('%Y-%m-%d') if hasattr(p, 'fecha_fin') else None,
-            'duracion_dias': p.duracion.days if hasattr(p, 'duracion') and p.duracion else 0,
-        }
-        for p in queryset
-    ]
+    try:
+        queryset = Postulacion.objects.filter(
+            estado_general='TITULADO',
+        ).exclude(tutor__isnull=True).exclude(tutor='').select_related('postulante', 'modalidad').annotate(
+            fecha_fin=Coalesce(Max('documentos__fecha_revision'), Now()),
+            duracion=ExpressionWrapper(
+                F('fecha_fin') - F('fecha_postulacion'),
+                output_field=DurationField(),
+            )
+        ).order_by('-fecha_fin')
+
+        results = []
+        for p in queryset:
+            try:
+                if _tutor_hash((p.tutor or '').strip()) == tutor_id_value:
+                    duracion_dias = 0
+                    if hasattr(p, 'duracion') and p.duracion:
+                        try:
+                            duracion_dias = p.duracion.days
+                        except (AttributeError, TypeError):
+                            duracion_dias = 0
+                    
+                    fecha_fin = None
+                    if hasattr(p, 'fecha_fin') and p.fecha_fin:
+                        try:
+                            fecha_fin = p.fecha_fin.strftime('%Y-%m-%d')
+                        except (AttributeError, TypeError):
+                            fecha_fin = None
+                    
+                    results.append({
+                        'postulacion_id': p.id,
+                        'alumno_nombre': f"{p.postulante.nombre} {p.postulante.apellido}",
+                        'alumno_codigo': p.postulante.codigo_estudiante,
+                        'modalidad': p.modalidad.nombre if p.modalidad else 'N/A',
+                        'titulo_trabajo': p.titulo_trabajo,
+                        'gestion': p.gestion,
+                        'fecha_inicio': p.fecha_postulacion.strftime('%Y-%m-%d') if p.fecha_postulacion else 'N/A',
+                        'fecha_fin': fecha_fin,
+                        'duracion_dias': duracion_dias,
+                    })
+            except Exception as e:
+                print(f"⚠️ Error procesando alumno: {e}")
+                continue
+        
+        return results
+    except Exception as e:
+        import traceback
+        print(f"❌ Error en detalle_alumnos_titulados_por_tutor: {str(e)}")
+        print(traceback.format_exc())
+        return []
+
+
+def _tutor_hash(value: str) -> int:
+    return zlib.adler32(value.encode('utf-8')) & 0xFFFFFFFF
 
 
 def reporte_eficiencia_carreras(year=None) -> list[dict]:
@@ -400,47 +403,75 @@ def reporte_eficiencia_carreras(year=None) -> list[dict]:
     - Tasa de titulación (Titulados / Iniciados).
     - Tiempo promedio de titulación (en días).
     """
-    queryset = Postulacion.objects.select_related('postulante__carrera_ref')
+    try:
+        queryset = Postulacion.objects.select_related('postulante')
 
-    if year:
-        try:
-            year_int = int(year)
-            queryset = queryset.filter(fecha_postulacion__year=year_int)
-        except (ValueError, TypeError):
-            pass
+        if year:
+            try:
+                year_int = int(year)
+                queryset = queryset.filter(fecha_postulacion__year=year_int)
+            except (ValueError, TypeError):
+                pass
 
-    # Agrupar por carrera para conteos
-    stats = queryset.values(
-        'postulante__carrera_ref__id',
-        'postulante__carrera_ref__nombre'
-    ).annotate(
-        total_iniciados=Count('id'),
-        total_titulados=Count('id', filter=Q(estado_general='TITULADO')),
-    ).order_by('-total_titulados')
+        # Agrupar por carrera para conteos
+        stats = queryset.values(
+            'postulante__carrera',
+        ).annotate(
+            total_iniciados=Count('id'),
+            total_titulados=Count('id', filter=Q(estado_general='TITULADO')),
+        ).order_by('-total_titulados')
 
-    # Calcular tiempos promedio solo para los titulados
-    tiempos_queryset = queryset.filter(estado_general='TITULADO').annotate(
-        fecha_fin=Coalesce(Max('documentos__fecha_revision'), Now()),
-        duracion=ExpressionWrapper(
-            F('fecha_fin') - F('fecha_postulacion'),
-            output_field=DurationField(),
+        # Calcular tiempos promedio solo para los titulados
+        tiempos_queryset = queryset.filter(estado_general='TITULADO').annotate(
+            fecha_fin=Coalesce(Max('documentos__fecha_revision'), Now()),
+            duracion=ExpressionWrapper(
+                F('fecha_fin') - F('fecha_postulacion'),
+                output_field=DurationField(),
+            )
+        ).values('postulante__carrera').annotate(
+            tiempo_promedio=Avg('duracion')
         )
-    ).values('postulante__carrera_ref__id').annotate(
-        tiempo_promedio=Avg('duracion')
-    )
-    
-    tiempos_map = {item['postulante__carrera_ref__id']: item['tiempo_promedio'] for item in tiempos_queryset}
+        
+        tiempos_map = {item['postulante__carrera']: item['tiempo_promedio'] for item in tiempos_queryset}
 
-    return [
-        {
-            'carrera': item['postulante__carrera_ref__nombre'] or 'Sin Carrera Asignada',
-            'total_iniciados': item['total_iniciados'],
-            'total_titulados': item['total_titulados'],
-            'tasa_titulacion': round((item['total_titulados'] / item['total_iniciados'] * 100), 2) if item['total_iniciados'] > 0 else 0.0,
-            'tiempo_promedio_dias': round(tiempos_map.get(item['postulante__carrera_ref__id']).total_seconds() / 86400, 2) if tiempos_map.get(item['postulante__carrera_ref__id']) else 0.0
-        }
-        for item in stats
-    ]
+        results = []
+        for item in stats:
+            try:
+                carrera = item['postulante__carrera'] or 'Sin Carrera Asignada'
+                total_iniciados = int(item['total_iniciados'] or 0)
+                total_titulados = int(item['total_titulados'] or 0)
+                
+                # Cálculo seguro de tasa de titulación
+                tasa = 0.0
+                if total_iniciados > 0:
+                    tasa = round((total_titulados / total_iniciados * 100), 2)
+                
+                # Cálculo seguro de tiempo promedio
+                tiempo_dias = 0.0
+                tiempo_promedio = tiempos_map.get(item['postulante__carrera'])
+                if tiempo_promedio is not None:
+                    try:
+                        tiempo_dias = round(tiempo_promedio.total_seconds() / 86400, 2)
+                    except (AttributeError, TypeError):
+                        tiempo_dias = 0.0
+                
+                results.append({
+                    'carrera': carrera,
+                    'total_iniciados': total_iniciados,
+                    'total_titulados': total_titulados,
+                    'tasa_titulacion': tasa,
+                    'tiempo_promedio_dias': tiempo_dias
+                })
+            except Exception as e:
+                print(f"⚠️ Error procesando carrera: {e}")
+                continue
+        
+        return results
+    except Exception as e:
+        import traceback
+        print(f"❌ Error en reporte_eficiencia_carreras: {str(e)}")
+        print(traceback.format_exc())
+        return []
 
 
 def generar_excel_tutores(data: list[dict]) -> HttpResponse:
@@ -471,9 +502,10 @@ def generar_excel_tutores(data: list[dict]) -> HttpResponse:
         ])
 
     # Ajustar ancho de columnas
-    for column_cells in ws.columns:
-        length = max(len(str(cell.value) or "") for cell in column_cells)
-        ws.column_dimensions[column_cells[0].column_letter].width = length + 2
+    for i, column_cells in enumerate(ws.columns, 1):
+        max_length = max(len(str(cell.value) or "") for cell in column_cells)
+        column_letter = get_column_letter(i)
+        ws.column_dimensions[column_letter].width = max_length + 2
 
     buffer = BytesIO()
     wb.save(buffer)

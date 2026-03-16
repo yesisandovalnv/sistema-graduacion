@@ -19,15 +19,14 @@ class ModalidadViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
-class EtapaViewSet(viewsets.ModelViewSet):
+class EtapaViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet de solo lectura para Etapas.
+    Las etapas son configuradas en la BD y no deben ser modificadas desde la API.
+    """
     queryset = Etapa.objects.select_related('modalidad').all()
     serializer_class = EtapaSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['nombre', 'modalidad__nombre']
     ordering_fields = ['orden', 'nombre', 'modalidad__nombre']
     ordering = ['modalidad__nombre', 'orden']
-
-    def get_permissions(self):
-        if self.action in {'create', 'update', 'partial_update', 'destroy'}:
-            return [CRUDModelPermission()]
-        return super().get_permissions()

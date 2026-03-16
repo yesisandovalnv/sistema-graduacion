@@ -1,5 +1,8 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Notificacion, Postulacion, Postulante
+
+User = get_user_model()
 
 
 class PostulanteListSerializer(serializers.ModelSerializer):
@@ -18,6 +21,7 @@ class PostulanteListSerializer(serializers.ModelSerializer):
 
 class PostulanteDetailSerializer(serializers.ModelSerializer):
     """Serializer detallado para postulante con información de usuario."""
+    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     usuario_id = serializers.IntegerField(source='usuario.id', read_only=True)
     usuario_nombre = serializers.CharField(source='usuario.get_full_name', read_only=True)
     usuario_email = serializers.CharField(source='usuario.email', read_only=True)
@@ -26,7 +30,7 @@ class PostulanteDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Postulante
         fields = [
-            'id', 'usuario_id', 'usuario_username', 'usuario_nombre', 'usuario_email',
+            'id', 'usuario', 'usuario_id', 'usuario_username', 'usuario_nombre', 'usuario_email',
             'nombre', 'apellido', 'ci', 'codigo_estudiante', 'telefono',
             'carrera', 'facultad', 'creado_en'
         ]
@@ -35,9 +39,7 @@ class PostulanteDetailSerializer(serializers.ModelSerializer):
 
 class PostulacionListSerializer(serializers.ModelSerializer):
     """Serializer para listado de postulaciones."""
-    postulante_nombre = serializers.CharField(
-        source='postulante.get_full_name', read_only=True
-    )
+    postulante_nombre = serializers.SerializerMethodField()
     modalidad_nombre = serializers.CharField(source='modalidad.nombre', read_only=True)
     etapa_nombre = serializers.CharField(source='etapa_actual.nombre', read_only=True)
     estado_display = serializers.CharField(source='get_estado_display', read_only=True)
@@ -51,11 +53,20 @@ class PostulacionListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'fecha_postulacion']
 
+    def get_postulante_nombre(self, obj):
+        nombre = (obj.postulante.nombre or '').strip()
+        apellido = (obj.postulante.apellido or '').strip()
+        return f"{nombre} {apellido}".strip()
+
 
 class PostulacionDetailSerializer(serializers.ModelSerializer):
     """Serializer detallado para postulación."""
     postulante = PostulanteDetailSerializer(read_only=True)
-    postulante_id = serializers.IntegerField(write_only=True)
+    postulante_id = serializers.PrimaryKeyRelatedField(
+        queryset=Postulante.objects.all(),
+        source='postulante',
+        write_only=True,
+    )
     modalidad_nombre = serializers.CharField(source='modalidad.nombre', read_only=True)
     etapa_nombre = serializers.CharField(source='etapa_actual.nombre', read_only=True)
     estado_display = serializers.CharField(source='get_estado_display', read_only=True)
