@@ -20,15 +20,15 @@ const Modal = ({ isOpen, title, children, onClose, onSubmit, submitText = 'Guard
       onMouseDown={handleBackdropMouseDown}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition text-2xl w-8 h-8 flex items-center justify-center"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition text-2xl w-8 h-8 flex items-center justify-center"
             disabled={isLoading}
           >
             ✕
@@ -39,10 +39,10 @@ const Modal = ({ isOpen, title, children, onClose, onSubmit, submitText = 'Guard
         <div className="p-6">{children}</div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium"
             disabled={isLoading}
           >
             Cancelar

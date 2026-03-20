@@ -30,27 +30,27 @@ const Alert = ({ type = 'info', message, onClose, autoClose = true, duration = 5
 
   const alertStyles = {
     success: {
-      bg: 'bg-green-100',
-      border: 'border-green-400',
-      text: 'text-green-700',
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      border: 'border-green-400 dark:border-green-800',
+      text: 'text-green-700 dark:text-green-400',
       icon: '✓',
     },
     error: {
-      bg: 'bg-red-100',
-      border: 'border-red-400',
-      text: 'text-red-700',
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      border: 'border-red-400 dark:border-red-800',
+      text: 'text-red-700 dark:text-red-400',
       icon: '✕',
     },
     warning: {
-      bg: 'bg-yellow-100',
-      border: 'border-yellow-400',
-      text: 'text-yellow-700',
+      bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+      border: 'border-yellow-400 dark:border-yellow-800',
+      text: 'text-yellow-700 dark:text-yellow-400',
       icon: '⚠',
     },
     info: {
-      bg: 'bg-blue-100',
-      border: 'border-blue-400',
-      text: 'text-blue-700',
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      border: 'border-blue-400 dark:border-blue-800',
+      text: 'text-blue-700 dark:text-blue-400',
       icon: 'ℹ',
     },
   };

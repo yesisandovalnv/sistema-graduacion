@@ -163,12 +163,12 @@ const Postulaciones = () => {
 
   const getEstadoBadge = (estado) => {
     const colors = {
-      borrador: 'bg-gray-100 text-gray-700',
-      en_revision: 'bg-yellow-100 text-yellow-700',
-      aprobada: 'bg-green-100 text-green-700',
-      rechazada: 'bg-red-100 text-red-700',
+      borrador: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+      en_revision: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+      aprobada: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      rechazada: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     };
-    return colors[estado] || 'bg-gray-100 text-gray-700';
+    return colors[estado] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
   };
 
   const columns = [
@@ -222,7 +222,7 @@ const Postulaciones = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Postulaciones</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Postulaciones</h1>
         <button
           onClick={() => openModal()}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow"
@@ -245,7 +245,7 @@ const Postulaciones = () => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="w-full sm:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+          className="w-full sm:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition"
         />
         <div className="w-full sm:w-auto">
           <select
@@ -254,7 +254,7 @@ const Postulaciones = () => {
               setFilterEstado(e.target.value);
               setPage(1);
             }}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition"
           >
             <option value="">Todas las postulaciones</option>
             {ESTADO_OPTIONS.map((op) => (
@@ -266,7 +266,7 @@ const Postulaciones = () => {
         </div>
       </div>
 
-      {loading && <div className="text-center text-gray-500 py-4">Cargando...</div>}
+      {loading && <div className="text-center text-gray-500 dark:text-gray-400 py-4">Cargando...</div>}
 
       {/* Table */}
       <Table
@@ -284,23 +284,23 @@ const Postulaciones = () => {
 
       {(meta.previous || meta.next || meta.count > 0) && (
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             Mostrando {postulaciones?.length > 0 ? (page - 1) * 20 + 1 : 0}–{Math.min((page - 1) * 20 + (postulaciones?.length || 0), meta.count || 0)} de {meta.count || 0} registros
           </span>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">Página {page}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Página {page}</span>
             <div className="flex gap-2">
             <button
               onClick={() => meta.previous && setPage((prev) => Math.max(1, prev - 1))}
               disabled={!meta.previous}
-              className="px-3 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition disabled:opacity-50"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
             >
               Anterior
             </button>
             <button
               onClick={() => meta.next && setPage((prev) => prev + 1)}
               disabled={!meta.next}
-              className="px-3 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition disabled:opacity-50"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
             >
               Siguiente
             </button>

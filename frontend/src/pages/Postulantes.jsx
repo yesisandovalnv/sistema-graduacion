@@ -5,7 +5,6 @@
 
 import { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
-import { useTheme } from '../context/ThemeContext';
 import api from '../api/api';
 import { API_CONFIG } from '../constants/api';
 import Modal from '../components/Modal';
@@ -27,7 +26,6 @@ const INITIAL_FORM_DATA = {
 };
 
 const Postulantes = () => {
-  const { isDark } = useTheme();
   const {
     data: postulantes,
     loading,
@@ -204,7 +202,6 @@ const Postulantes = () => {
             data={postulantes || []}
             columns={columns}
             pageSize={10}
-            isDark={isDark}
             onEdit={(row) =>
               openModal({
                 ...row,

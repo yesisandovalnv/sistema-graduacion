@@ -21,11 +21,11 @@ const FormField = ({
   className = '',
 }) => {
   const baseInputClass =
-    'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed';
+    'w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed';
 
   const inputClass = error
-    ? `${baseInputClass} border-red-500 focus:ring-red-500`
-    : `${baseInputClass} border-gray-300`;
+    ? `${baseInputClass} border-red-500 dark:border-red-800 focus:ring-red-500`
+    : `${baseInputClass} border-gray-300 dark:border-gray-600`;
 
   const renderInput = () => {
     switch (type) {
@@ -70,9 +70,9 @@ const FormField = ({
               checked={value}
               onChange={onChange}
               disabled={disabled}
-              className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              className="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
             />
-            <label htmlFor={name} className="text-gray-700 cursor-pointer">
+            <label htmlFor={name} className="text-gray-700 dark:text-gray-300 cursor-pointer">
               {label}
             </label>
           </div>
@@ -97,8 +97,8 @@ const FormField = ({
     return (
       <div className={className}>
         {renderInput()}
-        {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-        {helperText && <p className="text-gray-500 text-xs mt-1">{helperText}</p>}
+        {error && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{error}</p>}
+        {helperText && <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{helperText}</p>}
       </div>
     );
   }
@@ -106,14 +106,14 @@ const FormField = ({
   return (
     <div className={className}>
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {label}
-          {required && <span className="text-red-500">*</span>}
+          {required && <span className="text-red-500 dark:text-red-400">*</span>}
         </label>
       )}
       {renderInput()}
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-      {helperText && <p className="text-gray-500 text-xs mt-1">{helperText}</p>}
+      {error && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{error}</p>}
+      {helperText && <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{helperText}</p>}
     </div>
   );
 };

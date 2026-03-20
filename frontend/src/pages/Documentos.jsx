@@ -6,7 +6,6 @@
 import { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
 import TableSkeleton from '../components/TableSkeleton';
-import { useTheme } from '../context/ThemeContext';
 import api from '../api/api';
 import { API_CONFIG } from '../constants/api';
 import Modal from '../components/Modal';
@@ -31,7 +30,6 @@ const ESTADO_DOCUMENTO_OPTIONS = [
 ];
 
 const Documentos = () => {
-  const { isDark } = useTheme();
   const {
     data: documentos,
     loading,
@@ -241,11 +239,7 @@ const Documentos = () => {
 
         {/* Aviso si no hay documentos tipos */}
         {tiposDocumento.length === 0 && !loading && (
-          <div className={`mb-6 p-4 rounded-lg border flex items-start gap-3 ${
-            isDark
-              ? 'bg-blue-900/20 border-blue-800 text-blue-400'
-              : 'bg-blue-50 border-blue-200 text-blue-800'
-          }`}>
+          <div className="mb-6 p-4 rounded-lg border flex items-start gap-3 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-400">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <p>Por favor, crea tipos de documento antes de agregar documentos.</p>
           </div>
@@ -253,7 +247,7 @@ const Documentos = () => {
 
         {/* Tabla */}
         {loading && (
-          <TableSkeleton rows={10} columns={4} isDark={isDark} />
+          <TableSkeleton rows={10} columns={4} />
         )}
 
         {!loading && (
@@ -261,7 +255,6 @@ const Documentos = () => {
             data={documentos || []}
             columns={columns}
             pageSize={10}
-            isDark={isDark}
             onEdit={(row) => {
               setFormData(row);
               setArchivoFile(null);
@@ -333,11 +326,7 @@ const Documentos = () => {
                 type="file"
                 name="archivo"
                 onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition ${
-                  isDark
-                    ? 'bg-gray-700 border-gray-600 text-gray-200'
-                    : 'bg-white border-gray-300 text-gray-900'
-                }`}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition"
               />
               {archivoFile && (
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">

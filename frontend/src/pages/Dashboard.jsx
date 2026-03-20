@@ -109,11 +109,7 @@ const Dashboard = () => {
 
         {/* Error Alert */}
         {error && (
-          <div className={`mb-6 p-4 rounded-lg border flex items-start gap-3 ${
-            isDark
-              ? 'bg-red-900/20 border-red-800 text-red-400'
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
+          <div className="mb-6 p-4 rounded-lg border flex items-start gap-3 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Error al cargar datos</p>
@@ -174,7 +170,6 @@ const Dashboard = () => {
                   data={postulantesRecientes}
                   columns={postulantesColumns}
                   pageSize={5}
-                  isDark={isDark}
                   onView={(row) => console.log('Ver:', row)}
                   onEdit={(row) => console.log('Editar:', row)}
                 />
@@ -182,11 +177,7 @@ const Dashboard = () => {
             )}
 
             {/* Info Footer */}
-            <div className={`p-4 rounded-lg border text-sm ${
-              isDark
-                ? 'bg-gray-900 border-gray-700 text-gray-400'
-                : 'bg-gray-50 border-gray-200 text-gray-600'
-            }`}>
+            <div className="p-4 rounded-lg border text-sm bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
               <p>ℹ️ Última actualización: {new Date().toLocaleTimeString('es-ES')}</p>
             </div>
           </>

@@ -4,13 +4,11 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useTheme } from '../context/ThemeContext';
 import api from '../api/api';
 import { API_CONFIG } from '../constants/api';
 import { AlertCircle, Download } from 'lucide-react';
 
 const Reportes = () => {
-  const { isDark } = useTheme();
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -79,15 +77,13 @@ const Reportes = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Postulantes */}
-        <div className={`p-6 rounded-xl border dark:border-gray-700 ${
-          isDark ? 'bg-gray-800' : 'bg-white'
-        }`}>
+        <div className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total Postulantes
               </p>
-              <p className={`text-3xl font-bold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
                 {reportData.total_postulantes || 0}
               </p>
             </div>
@@ -96,15 +92,13 @@ const Reportes = () => {
         </div>
 
         {/* Total Postulaciones */}
-        <div className={`p-6 rounded-xl border dark:border-gray-700 ${
-          isDark ? 'bg-gray-800' : 'bg-white'
-        }`}>
+        <div className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total Postulaciones
               </p>
-              <p className={`text-3xl font-bold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
                 {reportData.total_postulaciones || 0}
               </p>
             </div>
@@ -113,15 +107,13 @@ const Reportes = () => {
         </div>
 
         {/* Documentos Pendientes */}
-        <div className={`p-6 rounded-xl border dark:border-gray-700 ${
-          isDark ? 'bg-gray-800' : 'bg-white'
-        }`}>
+        <div className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Documentos Pendientes
               </p>
-              <p className={`text-3xl font-bold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
                 {reportData.documentos_pendientes || 0}
               </p>
             </div>
@@ -130,15 +122,13 @@ const Reportes = () => {
         </div>
 
         {/* Total Titulados */}
-        <div className={`p-6 rounded-xl border dark:border-gray-700 ${
-          isDark ? 'bg-gray-800' : 'bg-white'
-        }`}>
+        <div className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total Titulados
               </p>
-              <p className={`text-3xl font-bold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
                 {reportData.total_titulados || 0}
               </p>
             </div>
@@ -153,24 +143,20 @@ const Reportes = () => {
     if (!reportData?.postulaciones_por_estado_general) return null;
 
     return (
-      <div className={`p-6 rounded-xl border dark:border-gray-700 ${
-        isDark ? 'bg-gray-800' : 'bg-white'
-      }`}>
-        <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+      <div className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
           Postulaciones por Estado
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {reportData.postulaciones_por_estado_general.map((item, idx) => (
             <div
               key={idx}
-              className={`p-4 rounded-lg border dark:border-gray-700 ${
-                isDark ? 'bg-gray-700' : 'bg-gray-50'
-              }`}
+              className="p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
             >
-              <p className={`text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className="text-xs font-medium uppercase text-gray-600 dark:text-gray-400">
                 {item.estado}
               </p>
-              <p className={`text-2xl font-bold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className="text-2xl font-bold mt-2 text-gray-900 dark:text-white">
                 {item.total}
               </p>
             </div>
@@ -184,26 +170,24 @@ const Reportes = () => {
     if (!reportData?.results) return null;
 
     return (
-      <div className={`p-6 rounded-xl border dark:border-gray-700 ${
-        isDark ? 'bg-gray-800' : 'bg-white'
-      }`}>
+      <div className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+            <thead className="border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className={`text-left py-3 px-4 font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <th className="text-left py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">
                   Tutor
                 </th>
-                <th className={`text-center py-3 px-4 font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">
                   Aprobados
                 </th>
-                <th className={`text-center py-3 px-4 font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">
                   Rechazados
                 </th>
-                <th className={`text-center py-3 px-4 font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">
                   Total
                 </th>
-                <th className={`text-right py-3 px-4 font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">
                   % Aprobación
                 </th>
               </tr>
@@ -212,9 +196,9 @@ const Reportes = () => {
               {reportData.results.map((tutor, idx) => (
                 <tr
                   key={idx}
-                  className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-100'} hover:${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}
+                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <td className={`py-3 px-4 ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
+                  <td className="py-3 px-4 text-gray-900 dark:text-gray-200">
                     {tutor.tutor_nombre || 'Sin datos'}
                   </td>
                   <td className={`py-3 px-4 text-center font-medium text-green-600 dark:text-green-400`}>
@@ -223,10 +207,10 @@ const Reportes = () => {
                   <td className={`py-3 px-4 text-center font-medium text-red-600 dark:text-red-400`}>
                     {tutor.rechazados || 0}
                   </td>
-                  <td className={`py-3 px-4 text-center font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  <td className="py-3 px-4 text-center font-semibold text-gray-900 dark:text-white">
                     {(tutor.aprobados || 0) + (tutor.rechazados || 0)}
                   </td>
-                  <td className={`py-3 px-4 text-right font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  <td className="py-3 px-4 text-right font-semibold text-gray-900 dark:text-white">
                     {tutor.total_procesados > 0
                       ? ((tutor.aprobados / tutor.total_procesados) * 100).toFixed(1)
                       : 0}
@@ -254,7 +238,7 @@ const Reportes = () => {
         </div>
 
         {/* Tabs */}
-        <div className={`mb-6 flex flex-wrap gap-2 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
           {[
             { id: 'general', label: 'General', icon: '📊' },
             { id: 'tutores', label: 'Tutores', icon: '👨‍🏫' },
@@ -265,8 +249,8 @@ const Reportes = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-3 font-medium transition border-b-2 flex items-center gap-2 ${
                 activeTab === tab.id
-                  ? `border-blue-600 text-blue-600 ${isDark ? 'text-blue-400' : ''}`
-                  : `border-transparent ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`
+                  ? `border-blue-600 text-blue-600 dark:text-blue-400`
+                  : `border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200`
               }`}
             >
               {tab.icon} {tab.label}
@@ -276,11 +260,7 @@ const Reportes = () => {
 
         {/* Error Alert */}
         {error && (
-          <div className={`mb-6 p-4 rounded-lg border flex items-start gap-3 ${
-            isDark
-              ? 'bg-red-900/20 border-red-800 text-red-400'
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
+          <div className="mb-6 p-4 rounded-lg border flex items-start gap-3 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Error al cargar reportes</p>
@@ -326,24 +306,18 @@ const Reportes = () => {
             {activeTab === 'tutores' && renderTutoresStats()}
 
             {activeTab === 'carreras' && reportData && (
-              <div className={`p-6 rounded-xl border dark:border-gray-700 ${
-                isDark ? 'bg-gray-800' : 'bg-white'
-              }`}>
-                <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <div className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                   Eficiencia por Carrera
                 </h3>
-                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                <p className="text-gray-600 dark:text-gray-400">
                   Datos de eficiencia por carrera: {JSON.stringify(reportData).substring(0, 100)}...
                 </p>
               </div>
             )}
 
             {/* Footer */}
-            <div className={`mt-8 p-4 rounded-lg border text-sm ${
-              isDark
-                ? 'bg-gray-900 border-gray-700 text-gray-400'
-                : 'bg-gray-50 border-gray-200 text-gray-600'
-            }`}>
+            <div className="mt-8 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm text-gray-600 dark:text-gray-400">
               <p>ℹ️ Última actualización: {new Date().toLocaleString('es-ES')}</p>
             </div>
           </>

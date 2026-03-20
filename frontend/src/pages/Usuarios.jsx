@@ -140,7 +140,7 @@ const Usuarios = () => {
       key: 'is_staff',
       label: 'Rol',
       render: (value) => (
-        <span className={`px-2 py-1 rounded text-xs font-medium ${value ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
+        <span className={`px-2 py-1 rounded text-xs font-medium ${value ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
           {value ? 'Admin' : 'Usuario'}
         </span>
       ),
@@ -149,7 +149,7 @@ const Usuarios = () => {
       key: 'is_active',
       label: 'Estado',
       render: (value) => (
-        <span className={`px-2 py-1 rounded text-xs font-medium ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <span className={`px-2 py-1 rounded text-xs font-medium ${value ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}`}>
           {value ? '✓ Activo' : '✗ Inactivo'}
         </span>
       ),
@@ -159,7 +159,7 @@ const Usuarios = () => {
   return (
     <div className="space-y-6">
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Usuarios</h1>
         <button
           onClick={() => {
             setFormData(INITIAL_FORM_DATA);
@@ -183,7 +183,7 @@ const Usuarios = () => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none transition"
         />
       </div>
 
@@ -256,7 +256,7 @@ const Usuarios = () => {
         />
       </Modal>
 
-      {loading && <div className="text-center text-gray-500 py-4">Cargando...</div>}
+      {loading && <div className="text-center py-4 text-gray-500 dark:text-gray-400">Cargando...</div>}
 
       <Table
         columns={columns}
@@ -277,23 +277,23 @@ const Usuarios = () => {
 
       {(meta.previous || meta.next || meta.count > 0) && (
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm transition-colors text-gray-600 dark:text-gray-400">
             Mostrando {usuarios?.length > 0 ? (page - 1) * 20 + 1 : 0}–{Math.min((page - 1) * 20 + (usuarios?.length || 0), meta.count || 0)} de {meta.count || 0} registros
           </span>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">Página {page}</span>
+            <span className="text-sm transition-colors text-gray-600 dark:text-gray-400">Página {page}</span>
             <div className="flex gap-2">
             <button
               onClick={() => meta.previous && setPage((prev) => Math.max(1, prev - 1))}
               disabled={!meta.previous}
-              className="px-3 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition disabled:opacity-50"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
             >
               Anterior
             </button>
             <button
               onClick={() => meta.next && setPage((prev) => prev + 1)}
               disabled={!meta.next}
-              className="px-3 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition disabled:opacity-50"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50"
             >
               Siguiente
             </button>

@@ -16,21 +16,21 @@ const Table = ({ columns, data, loading, onEdit, onDelete, onView }) => {
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-gray-500 font-medium">No hay datos disponibles</p>
+      <div className="flex items-center justify-center h-32 rounded-lg border bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition-colors">
+        <p className="font-medium text-gray-500 dark:text-gray-400">No hay datos disponibles</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto bg-white rounded-lg shadow">
+    <div className="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 transition-colors">
       <table className="w-full">
-        <thead className="bg-gray-100 border-b">
+        <thead className="border-b bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-6 py-3 text-left text-sm font-semibold text-gray-700 ${
+                className={`px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors ${
                   col.width ? `w-${col.width}` : ''
                 }`}
               >
@@ -38,7 +38,7 @@ const Table = ({ columns, data, loading, onEdit, onDelete, onView }) => {
               </th>
             ))}
             {(onEdit || onDelete || onView) && (
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors">
                 Acciones
               </th>
             )}
@@ -46,9 +46,9 @@ const Table = ({ columns, data, loading, onEdit, onDelete, onView }) => {
         </thead>
         <tbody>
           {data.map((row, idx) => (
-            <tr key={row.id || idx} className="border-b hover:bg-gray-50 transition">
+            <tr key={row.id || idx} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
               {columns.map((col) => (
-                <td key={`${row.id}-${col.key}`} className="px-6 py-4 text-sm text-gray-800">
+                <td key={`${row.id}-${col.key}`} className="px-6 py-4 text-sm text-gray-800 dark:text-gray-200 transition-colors">
                   {col.render ? col.render(row[col.key], row) : row[col.key]}
                 </td>
               ))}
@@ -58,7 +58,7 @@ const Table = ({ columns, data, loading, onEdit, onDelete, onView }) => {
                     {onView && (
                       <button
                         onClick={() => onView(row)}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition text-xs font-medium"
+                        className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition text-xs font-medium"
                         title="Ver"
                       >
                         👁️
@@ -67,7 +67,7 @@ const Table = ({ columns, data, loading, onEdit, onDelete, onView }) => {
                     {onEdit && (
                       <button
                         onClick={() => onEdit(row)}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-xs font-medium"
+                        className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition text-xs font-medium"
                         title="Editar"
                       >
                         ✏️
@@ -80,7 +80,7 @@ const Table = ({ columns, data, loading, onEdit, onDelete, onView }) => {
                             onDelete(row);
                           }
                         }}
-                        className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-xs font-medium"
+                        className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition text-xs font-medium"
                         title="Eliminar"
                       >
                         🗑️

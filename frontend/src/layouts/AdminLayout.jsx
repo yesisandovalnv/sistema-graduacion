@@ -12,7 +12,7 @@ import GlobalLoader from '../components/ui/GlobalLoader';
 
 const AdminLayout = ({ children }) => {
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
       {/* Global Loader */}
       <GlobalLoader />
 
@@ -39,7 +39,7 @@ const AdminLayout = ({ children }) => {
         <SidebarModern />
 
         {/* Content Area - ml-64 offsets the fixed sidebar (w-64) */}
-        <main className="flex-1 overflow-auto ml-64 transition-all duration-200 ease-in-out">
+        <main className="flex-1 overflow-auto ml-64 transition-all duration-200 ease-in-out bg-gray-50 dark:bg-slate-900">
           <div className="px-4 py-6 max-w-7xl mx-auto">
             {children}
           </div>
