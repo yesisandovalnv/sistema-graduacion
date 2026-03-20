@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
+import TableSkeleton from '../components/TableSkeleton';
 import { useTheme } from '../context/ThemeContext';
 import api from '../api/api';
 import { API_CONFIG } from '../constants/api';
@@ -252,12 +253,7 @@ const Documentos = () => {
 
         {/* Tabla */}
         {loading && (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <p className="text-gray-500 dark:text-gray-400">Cargando...</p>
-            </div>
-          </div>
+          <TableSkeleton rows={10} columns={4} isDark={isDark} />
         )}
 
         {!loading && (

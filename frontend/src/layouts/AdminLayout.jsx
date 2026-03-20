@@ -39,8 +39,8 @@ const AdminLayout = ({ children }) => {
         <SidebarModern />
 
         {/* Content Area - ml-64 offsets the fixed sidebar (w-64) */}
-        <main className="flex-1 overflow-auto ml-64">
-          <div className="p-6">
+        <main className="flex-1 overflow-auto ml-64 transition-all duration-200 ease-in-out">
+          <div className="px-4 py-6 max-w-7xl mx-auto">
             {children}
           </div>
         </main>

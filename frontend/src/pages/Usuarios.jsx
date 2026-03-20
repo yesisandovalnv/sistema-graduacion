@@ -157,7 +157,7 @@ const Usuarios = () => {
   ];
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
         <button
