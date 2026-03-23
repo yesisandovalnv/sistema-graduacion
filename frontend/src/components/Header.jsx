@@ -1,15 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Bell, User, LogOut, Settings, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const Header = ({ user, onLogout }) => {
+  const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  
+  const notificationsRef = useRef(null);
+  const notificationsButtonRef = useRef(null);
+  const userMenuRef = useRef(null)
+  const userMenuButtonRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Cerrar notificaciones si hace clic fuera
+      if (
+        notificationsRef.current &&
+        notificationsButtonRef.current &&
+        !notificationsRef.current.contains(event.target) &&
+        !notificationsButtonRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false)
+      }
+
+      // Cerrar menú de usuario si hace clic fuera
+      if (
+        userMenuRef.current &&
+        userMenuButtonRef.current &&
+        !userMenuRef.current.contains(event.target) &&
+        !userMenuButtonRef.current.contains(event.target)
+      ) {
+        setShowUserMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
     <header className="sticky top-0 z-40 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 backdrop-blur backdrop-filter bg-opacity-80 dark:bg-opacity-80">
-      <div className="px-6 py-4 pl-64">
+      <div className="px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Buscador */}
           <div className="flex-1 max-w-md">
@@ -41,6 +75,7 @@ const Header = ({ user, onLogout }) => {
             {/* Notificaciones */}
             <div className="relative">
               <button
+                ref={notificationsButtonRef}
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
@@ -49,7 +84,10 @@ const Header = ({ user, onLogout }) => {
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div 
+                  ref={notificationsRef}
+                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                >
                   <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100">Notificaciones</h3>
                   </div>
@@ -75,6 +113,7 @@ const Header = ({ user, onLogout }) => {
             {/* Perfil Usuario */}
             <div className="relative">
               <button
+                ref={userMenuButtonRef}
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
@@ -87,7 +126,10 @@ const Header = ({ user, onLogout }) => {
               </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div 
+                  ref={userMenuRef}
+                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                >
                   <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {user?.email || 'usuario@ejemplo.com'}
@@ -105,6 +147,7 @@ const Header = ({ user, onLogout }) => {
                       onClick={() => {
                         setShowUserMenu(false);
                         onLogout();
+                        navigate('/login');
                       }}
                       className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     >

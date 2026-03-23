@@ -1,16 +1,18 @@
-import React from 'react';
-import { LayoutDashboard, Users, FileCheck, BarChart3, Settings, ChevronRight, Clipboard, BookOpen, Shield } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutDashboard, Users, FileCheck, BarChart3, ChevronRight, ChevronLeft, Clipboard, BookOpen, Shield } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import { useSidebarCollapse } from '../context/SidebarCollapseContext';
 
 const Sidebar = () => {
   const location = useLocation();
   const { user } = useAuth();
+  const { collapsed, setCollapsed } = useSidebarCollapse();
 
   const navigationItems = [
     {
       icon: LayoutDashboard,
-      label: 'Dashboard',
+      label: 'Inicio',
       href: '/dashboard',
       badge: null,
       roles: ['admin', 'administ'],
@@ -81,26 +83,46 @@ const Sidebar = () => {
   const isActive = (href) => location.pathname === href || location.pathname.startsWith(href + '/');
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-50 flex flex-col">
-      {/* Bloque Superior - Logo + Navegación + Configuración */}
-      <div className="space-y-6">
+    <aside 
+      className={`fixed left-0 top-0 h-screen ${collapsed ? 'w-20' : 'w-64'} relative text-white transition-all duration-300 z-50 flex flex-col shadow-xl border-r border-white/10 overflow-hidden`}
+    >
+      {/* Background Image Layer */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-100 z-0"
+        style={{ backgroundImage: "url('/images/universidad.jpg')" }}
+      />
+      
+      {/* Glass Layer (Blur Real) */}
+      <div className="absolute inset-0 backdrop-blur-none bg-white/0 z-0" />
+      
+      {/* Dark Overlay Suave */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
+      
+      {/* Content Layer */}
+      <div className="relative z-10 flex flex-col h-full text-white drop-shadow-xl">
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+        {!collapsed && (
+        <div className="p-6 border-b border-white/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <LayoutDashboard className="w-6 h-6 text-white" />
+            <div className="w-8 h-8 rounded-xl overflow-hidden bg-white/10 backdrop-blur flex items-center justify-center">
+              <img
+                src="/images/uabjb.png"
+                alt="Logo Universidad"
+                className="w-6 h-6 object-contain"
+              />
             </div>
             <div className="flex-1">
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white">Graduación</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Sistema de Gestión</p>
+              <h1 className="text-lg font-semibold text-white tracking-wide">Graduación</h1>
+              <p className="text-xs text-gray-300">Sistema de Gestión</p>
             </div>
           </div>
         </div>
+        )}
 
         {/* Navegación + Separador + Configuración */}
-        <div>
+        <div className="flex flex-col flex-1">
           {/* Navegación */}
-          <nav className="px-4 pb-4 space-y-2">
+          <nav className="px-3 pt-2 pb-4 space-y-3">
             {visibleItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -109,15 +131,15 @@ const Sidebar = () => {
                 <Link
                   key={item.href}
                   to={item.href}
-                  className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ease-in-out group ${
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-200 ease-out group ${
                     active
-                      ? 'bg-blue-500 text-white shadow-md shadow-blue-500/40'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                      ? 'bg-blue-500/20 bg-white/10 text-white shadow-lg shadow-inner'
+                      : 'text-white hover:bg-white/5 hover:translate-x-1'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+                    {!collapsed && <span className="font-medium tracking-wide">{item.label}</span>}
                   </div>
                   {item.badge && (
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -135,38 +157,35 @@ const Sidebar = () => {
           </nav>
 
           {/* Separador */}
-          <div className="mx-4 my-4 border-t border-gray-200 dark:border-gray-800"></div>
-
-          {/* Configuración */}
-          <nav className="px-4 space-y-2">
-            <Link
-              to="/configuracion"
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ease-in-out group ${
-                isActive('/configuracion')
-                  ? 'bg-blue-500 text-white shadow-md shadow-blue-500/40'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-              }`}
-            >
-              <Settings className="w-5 h-5" />
-              <span className="font-medium">Configuración</span>
-            </Link>
-          </nav>
+          <div className="mx-4 my-4 border-t border-white/20"></div>
         </div>
-      </div>
 
-      {/* Footer Info */}
-      <div className="mt-8 p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4">
-          <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
-            ¿Necesitas ayuda?
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-            Consulta nuestra documentación o contacta al equipo de soporte.
-          </p>
-          <button className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition-colors">
-            Contactar Soporte
+        {/* Botón Colapsar */}
+        <div className="mt-auto py-4 px-2 flex justify-center w-full">
+          <button 
+            onClick={() => setCollapsed(!collapsed)}
+            className="rounded-full bg-white/10 hover:bg-white/20 transition hover:scale-110 p-2 text-white"
+          >
+            {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </button>
         </div>
+
+        {/* Footer Info */}
+        {!collapsed && (
+        <div className="p-4 border-t border-white/20 bg-black/20">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <p className="text-xs font-semibold text-white mb-2">
+              ¿Necesitas ayuda?
+            </p>
+            <p className="text-xs text-gray-200 mb-3">
+              Consulta nuestra documentación o contacta al equipo de soporte.
+            </p>
+            <button className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition-colors">
+              Contactar Soporte
+            </button>
+          </div>
+        </div>
+        )}
       </div>
     </aside>
   );

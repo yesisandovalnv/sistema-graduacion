@@ -7,7 +7,9 @@ function NotificationBell() {
   const { isAuthenticated } = useAuth()
   const [notifications, setNotifications] = useState([])
   const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef(null)
+  const containerRef = useRef(null)
+  const buttonRef = useRef(null)
+  const panelRef = useRef(null)
 
   const unreadCount = notifications.filter((n) => !n.leida).length
 
@@ -29,10 +31,20 @@ function NotificationBell() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false)
+      // Si hace clic en el botón, ignorar (handleToggle lo maneja)
+      if (buttonRef.current && buttonRef.current.contains(event.target)) {
+        return
       }
+      
+      // Si hace clic dentro del panel, no cerrar
+      if (panelRef.current && panelRef.current.contains(event.target)) {
+        return
+      }
+      
+      // Si hace clic fuera del botón Y del panel, cerrar
+      setIsOpen(false)
     }
+    
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
@@ -69,8 +81,12 @@ function NotificationBell() {
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button onClick={handleToggle} className="relative bg-transparent border-none cursor-pointer p-2">
+    <div className="relative" ref={containerRef}>
+      <button 
+        ref={buttonRef}
+        onClick={handleToggle} 
+        className="relative bg-transparent border-none cursor-pointer p-2"
+      >
         <span aria-hidden="true" className="text-2xl">🔔</span>
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
@@ -80,7 +96,10 @@ function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-lg z-10">
+        <div 
+          ref={panelRef}
+          className="absolute top-full right-0 mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-lg z-10"
+        >
           <div className="p-4 border-b border-slate-200">
             <h4 className="m-0 text-base font-semibold">Notificaciones</h4>
           </div>

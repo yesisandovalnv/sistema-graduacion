@@ -9,10 +9,15 @@ import { Toaster } from 'react-hot-toast';
 import Header from '../components/Header';
 import SidebarModern from '../components/SidebarModern';
 import GlobalLoader from '../components/ui/GlobalLoader';
+import { SidebarCollapseProvider, useSidebarCollapse } from '../context/SidebarCollapseContext';
+import useAuth from '../hooks/useAuth';
 
-const AdminLayout = ({ children }) => {
+const AdminLayoutContent = ({ children }) => {
+  const { collapsed } = useSidebarCollapse();
+  const { user, logout } = useAuth();
+
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
+    <div className="flex h-screen bg-gray-50 dark:bg-slate-900">
       {/* Global Loader */}
       <GlobalLoader />
 
@@ -29,23 +34,31 @@ const AdminLayout = ({ children }) => {
           },
         }}
       />
-      
-      {/* Header */}
-      <Header />
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <SidebarModern />
+      {/* Sidebar */}
+      <SidebarModern />
 
-        {/* Content Area - ml-64 offsets the fixed sidebar (w-64) */}
-        <main className="flex-1 overflow-auto ml-64 transition-all duration-200 ease-in-out bg-gray-50 dark:bg-slate-900">
+      {/* Right Content Area */}
+      <div className="flex flex-col flex-1 transition-all duration-300 ease-in-out">
+        {/* Header */}
+        <Header user={user} onLogout={logout} />
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-slate-900">
           <div className="px-4 py-6 max-w-7xl mx-auto">
             {children}
           </div>
         </main>
       </div>
     </div>
+  );
+};
+
+const AdminLayout = ({ children }) => {
+  return (
+    <SidebarCollapseProvider>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </SidebarCollapseProvider>
   );
 };
 

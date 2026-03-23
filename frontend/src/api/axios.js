@@ -10,10 +10,13 @@ import { API_CONFIG } from '../constants/api';
 import { getLoaderInstance } from '../context/LoaderContext';
 import { error as showError } from '../utils/notify.jsx';
 
+// Singleton Promise to prevent multiple simultaneous refresh token requests
+// When multiple requests receive 401, they wait for the same refresh promise
+let refreshTokenPromise = null;
+
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: API_CONFIG.BASE_URL,
-  headers: {
+  baseURL: API_CONFIG.BASE_URL,  timeout: 30000,  headers: {
     'Content-Type': 'application/json',
   },
 });
@@ -116,37 +119,54 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
-        
-        if (!refreshToken) {
-          // No refresh token, redirect to login
-          localStorage.clear();
-          window.location.href = '/login';
-          return Promise.reject(error);
+        // Singleton pattern: if refresh already in progress, wait for it instead of making new request
+        if (!refreshTokenPromise) {
+          refreshTokenPromise = (async () => {
+            try {
+              const refreshToken = localStorage.getItem(API_CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
+              
+              if (!refreshToken) {
+                // No refresh token, redirect to login
+                localStorage.clear();
+                window.location.href = '/login';
+                throw new Error('No refresh token available');
+              }
+
+              // Request new access token
+              const response = await axios.post(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REFRESH_TOKEN}`,
+                { refresh: refreshToken }
+              );
+
+              const { access } = response.data;
+
+              // Save new token
+              localStorage.setItem(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, access);
+
+              return access;
+            } catch (refreshError) {
+              // Show session expired message when token refresh fails
+              showError('Sesión expirada - por favor inicia sesión nuevamente');
+              
+              // Refresh failed, clear storage and redirect to login
+              localStorage.clear();
+              window.location.href = '/login';
+              throw refreshError;
+            } finally {
+              // Clear promise after refresh completes (success or error)
+              refreshTokenPromise = null;
+            }
+          })();
         }
 
-        // Request new access token
-        const response = await axios.post(
-          `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REFRESH_TOKEN}`,
-          { refresh: refreshToken }
-        );
-
-        const { access } = response.data;
-
-        // Save new token
-        localStorage.setItem(API_CONFIG.STORAGE_KEYS.ACCESS_TOKEN, access);
+        // Wait for refresh promise (either existing or newly created)
+        const access = await refreshTokenPromise;
 
         // Retry original request with new token
         originalRequest.headers.Authorization = `Bearer ${access}`;
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // Show session expired message when token refresh fails
-        showError('Sesión expirada - por favor inicia sesión nuevamente');
-        
-        // Refresh failed, clear storage and redirect to login
-        localStorage.clear();
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
+      } catch (err) {
+        return Promise.reject(err);
       }
     }
 

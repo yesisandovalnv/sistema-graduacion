@@ -79,7 +79,23 @@ const Documentos = () => {
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'archivo') {
-      setArchivoFile(files?.[0] || null);
+      const file = files?.[0] || null;
+      if (file) {
+        // Validar extensión permitida
+        const extensionesPermitidas = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+        const extension = file.name.split('.').pop().toLowerCase();
+        if (!extensionesPermitidas.includes(extension)) {
+          setError(`Extensión no permitida. Use: ${extensionesPermitidas.join(', ')}`);
+          return;
+        }
+        // Validar tamaño máximo (5MB)
+        const MAX_SIZE = 5 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+          setError('El archivo no debe exceder 5MB');
+          return;
+        }
+      }
+      setArchivoFile(file);
       return;
     }
     setFormData({
@@ -320,12 +336,14 @@ const Documentos = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Archivo de Documento
+                Archivo de Documento *
               </label>
               <input
                 type="file"
                 name="archivo"
                 onChange={handleInputChange}
+                required
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition"
               />
               {archivoFile && (

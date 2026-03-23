@@ -30,7 +30,7 @@ const Table = ({ columns, data, loading, onEdit, onDelete, onView }) => {
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors ${
+                className={`px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider transition-colors ${
                   col.width ? `w-${col.width}` : ''
                 }`}
               >
@@ -38,7 +38,7 @@ const Table = ({ columns, data, loading, onEdit, onDelete, onView }) => {
               </th>
             ))}
             {(onEdit || onDelete || onView) && (
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 transition-colors">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider transition-colors">
                 Acciones
               </th>
             )}

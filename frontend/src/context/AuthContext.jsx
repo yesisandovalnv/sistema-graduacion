@@ -36,6 +36,29 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /**
+   * Multi-tab session synchronization (FASE 2)
+   * Detecta cuando otro tab elimina el token de acceso y sincroniza estado
+   */
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      // Detectar si el access_token fue removido en otra pestaña
+      if (event.key === 'access_token' && event.newValue === null) {
+        console.warn('[AuthContext] Token removido desde otra pestaña - sincronizando sesión');
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    };
+
+    // Agregar listener para cambios en localStorage desde otras pestañas
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup: Remover listener cuando componente se desmonta
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  /**
    * Login handler
    */
   const login = useCallback(async (username, password) => {

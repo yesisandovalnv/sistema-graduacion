@@ -6,6 +6,9 @@
 import { useState, useEffect } from 'react';
 import { API_CONFIG } from '../constants/api';
 import { useCrud } from '../hooks/useCrud';
+import Modal from '../components/Modal';
+import Alert from '../components/Alert';
+import FormField from '../components/FormField';
 
 const Modalidades = () => {
   const {
@@ -64,8 +67,7 @@ const Modalidades = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError('');
     setSuccess('');
 
@@ -126,23 +128,14 @@ const Modalidades = () => {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Modalidades</h1>
         <button
           onClick={() => openModal()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition font-medium"
         >
           ➕ Nueva Modalidad
         </button>
       </div>
 
-      {error && (
-        <div className="p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-400 rounded">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-800 text-green-700 dark:text-green-400 rounded">
-          {success}
-        </div>
-      )}
+      {error && <Alert type="error" message={error} autoClose={false} />}
+      {success && <Alert type="success" message={success} />}
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
@@ -152,7 +145,7 @@ const Modalidades = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {modalidades.length > 0 ? (
             modalidades.map((modalidad) => (
-              <div key={modalidad.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-blue-600">
+              <div key={modalidad.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-l-4 border-blue-600">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="font-bold text-lg text-gray-900 dark:text-white">{modalidad.nombre}</h3>
                   <span className={`text-xs px-2 py-1 rounded ${modalidad.activa ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
@@ -188,85 +181,47 @@ const Modalidades = () => {
       )}
 
       {/* Modal */}
-      {showModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) {
-              closeModal();
-            }
-          }}
-        >
-          <div
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-md"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-              {editingId ? '✏️ Editar Modalidad' : '➕ Nueva Modalidad'}
-            </h2>
+      <Modal
+        isOpen={showModal}
+        title={editingId ? '✏️ Editar Modalidad' : '➕ Nueva Modalidad'}
+        onClose={closeModal}
+        onSubmit={handleSubmit}
+        submitText={editingId ? 'Actualizar' : 'Crear'}
+      >
+        <form className="space-y-4">
+          <FormField
+            label="Nombre *"
+            name="nombre"
+            type="text"
+            value={formData.nombre}
+            onChange={handleInputChange}
+            placeholder="Ej: Tesis"
+            required
+          />
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Nombre *
-                </label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Ej: Tesis"
-                />
-              </div>
+          <FormField
+            label="Descripción"
+            name="descripcion"
+            type="textarea"
+            value={formData.descripcion}
+            onChange={handleInputChange}
+            placeholder="Describe esta modalidad..."
+          />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Descripción
-                </label>
-                <textarea
-                  name="descripcion"
-                  value={formData.descripcion}
-                  onChange={handleInputChange}
-                  rows="4"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Describe esta modalidad..."
-                />
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="activa"
-                  checked={formData.activa}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <label className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Modalidad activa
-                </label>
-              </div>
-
-              <div className="flex space-x-2 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-                >
-                  {editingId ? 'Actualizar' : 'Crear'}
-                </button>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-100 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition font-medium"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              name="activa"
+              checked={formData.activa}
+              onChange={handleInputChange}
+              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+            />
+            <label className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Modalidad activa
+            </label>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 };

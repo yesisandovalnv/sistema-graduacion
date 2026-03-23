@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { Modal, FormField, Table, Alert } from '../components';
+import TableSkeleton from '../components/TableSkeleton';
 import { useModal } from '../hooks/useModal';
 import { useCrud } from '../hooks/useCrud';
 import { useListFilters } from '../hooks/useListFilters';
@@ -165,7 +166,7 @@ const Usuarios = () => {
             setFormData(INITIAL_FORM_DATA);
             openModal();
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition font-medium"
         >
           + Nuevo Usuario
         </button>
@@ -256,11 +257,12 @@ const Usuarios = () => {
         />
       </Modal>
 
-      {loading && <div className="text-center py-4 text-gray-500 dark:text-gray-400">Cargando...</div>}
+      {loading && <TableSkeleton rows={10} columns={5} />}
 
-      <Table
-        columns={columns}
-        data={usuarios}
+      {!loading && (
+        <Table
+          columns={columns}
+          data={usuarios}
         loading={loading}
         onEdit={(user) => {
           const userData = {
@@ -273,8 +275,7 @@ const Usuarios = () => {
         }}
         onDelete={handleDelete}
         keyField="id"
-      />
-
+      />      )}
       {(meta.previous || meta.next || meta.count > 0) && (
         <div className="mt-4 flex items-center justify-between">
           <span className="text-sm transition-colors text-gray-600 dark:text-gray-400">

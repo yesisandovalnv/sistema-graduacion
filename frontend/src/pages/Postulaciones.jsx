@@ -10,6 +10,7 @@ import { API_CONFIG } from '../constants/api';
 import Modal from '../components/Modal';
 import FormField from '../components/FormField';
 import Table from '../components/Table';
+import TableSkeleton from '../components/TableSkeleton';
 import Alert from '../components/Alert';
 import { useModal } from '../hooks/useModal';
 import { useCrud } from '../hooks/useCrud';
@@ -106,6 +107,13 @@ const Postulaciones = () => {
     setError('');
     setSuccess('');
 
+    // Validar campos requeridos (dropdowns)
+    if (!formData.postulante_id || !formData.modalidad || !formData.gestion) {
+      setError('Por favor completa todos los campos requeridos (Postulante, Modalidad, Gestión)');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const endpoint = isEditMode
         ? API_CONFIG.ENDPOINTS.POSTULACION_DETAIL(formData.id)
@@ -142,6 +150,10 @@ const Postulaciones = () => {
   };
 
   const handleDelete = async (postulacion) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar la postulación #${postulacion.id}?`)) {
+      return;
+    }
+    
     setError('');
     setSuccess('');
 
@@ -266,12 +278,12 @@ const Postulaciones = () => {
         </div>
       </div>
 
-      {loading && <div className="text-center text-gray-500 dark:text-gray-400 py-4">Cargando...</div>}
+      {loading && <TableSkeleton rows={10} columns={6} />}
 
-      {/* Table */}
-      <Table
-        columns={columns}
-        data={postulaciones}
+      {!loading && (
+        <Table
+          columns={columns}
+          data={postulaciones}
         loading={loading}
         onEdit={(row) =>
           openModal({
@@ -281,6 +293,7 @@ const Postulaciones = () => {
         }
         onDelete={handleDelete}
       />
+      )}
 
       {(meta.previous || meta.next || meta.count > 0) && (
         <div className="mt-4 flex items-center justify-between">

@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base Styles - Prevent white flash on route changes */
+html, body, #root {
+  min-height: 100%;
+  background-color: #0f172a; /* Fallback oscuro neutro */
+}
+
 /* Custom Tailwind Utilities */
 
 @layer components {
@@ -82,9 +88,9 @@
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(71, 85, 105, 0.6) 25%,
-    rgba(100, 116, 139, 0.6) 50%,
-    rgba(71, 85, 105, 0.6) 75%
+    rgba(71, 85, 105, 0.25) 25%,
+    rgba(100, 116, 139, 0.25) 50%,
+    rgba(71, 85, 105, 0.25) 75%
   );
   background-size: 1000px 100%;
   animation: shimmer 2s infinite;

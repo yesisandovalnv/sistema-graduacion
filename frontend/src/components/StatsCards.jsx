@@ -39,9 +39,9 @@ const StatsCards = ({ stats = {} }) => {
     const isPositive = change >= 0;
 
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-700/50 hover:shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 overflow-hidden group transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-slate-700/50 hover:shadow-xl hover:-translate-y-1 transition-all transition-shadow duration-300 overflow-hidden group transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
         {/* Borde superior degradado */}
-        <div className={`h-1 bg-gradient-to-r ${colorClass}`}></div>
+        <div className={`h-0.5 bg-gradient-to-r ${colorClass}`}></div>
 
         <div className="p-6">
           <div className="flex items-start justify-between">

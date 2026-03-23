@@ -46,7 +46,7 @@ const Charts = ({ isDark = false }) => {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
       {/* Gráfico de Barras */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all transition-shadow duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Postulantes & Documentos por Semana
         </h3>
@@ -64,7 +64,14 @@ const Charts = ({ isDark = false }) => {
               }}
               cursor={{ fill: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.1)' }}
             />
-            <Legend wrapperStyle={{ paddingTop: '16px' }} />
+            <Legend 
+              wrapperStyle={{ 
+                paddingTop: '16px',
+                color: chartColors.textColor,
+                fontSize: '14px',
+              }}
+              textColor={chartColors.textColor}
+            />
             <Bar dataKey="postulantes" fill={chartColors.barColor1} radius={[8, 8, 0, 0]} />
             <Bar dataKey="documentos" fill={chartColors.barColor2} radius={[8, 8, 0, 0]} />
           </BarChart>
@@ -72,7 +79,7 @@ const Charts = ({ isDark = false }) => {
       </div>
 
       {/* Gráfico de Línea */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all transition-shadow duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Progreso General (6 Meses)
         </h3>
@@ -90,7 +97,14 @@ const Charts = ({ isDark = false }) => {
               }}
               cursor={{ stroke: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.2)' }}
             />
-            <Legend wrapperStyle={{ paddingTop: '16px' }} />
+            <Legend 
+              wrapperStyle={{ 
+                paddingTop: '16px',
+                color: chartColors.textColor,
+                fontSize: '14px',
+              }}
+              textColor={chartColors.textColor}
+            />
             <Line
               type="monotone"
               dataKey="graduados"
@@ -123,11 +137,11 @@ const Charts = ({ isDark = false }) => {
       </div>
 
       {/* Gráfico Circular - Primera mitad (ancho completo en móvil, mitad en desktop) */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-slate-700/50 lg:col-span-1 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-slate-700/50 lg:col-span-1 hover:-translate-y-1 hover:shadow-xl transition-all transition-shadow duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           Distribución por Estado
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie
               data={pieChartData}
@@ -155,11 +169,11 @@ const Charts = ({ isDark = false }) => {
         </ResponsiveContainer>
 
         {/* Leyenda personalizada */}
-        <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+        <div className="mt-0 grid grid-cols-2 gap-0.5 text-xs">
           {pieChartData.map((item, idx) => (
-            <div key={idx} className="flex items-center gap-2">
+            <div key={idx} className="flex items-center gap-1 px-0.5 py-0">
               <div
-                className="w-3 h-3 rounded-full"
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{ backgroundColor: item.color }}
               ></div>
               <span className="text-gray-600 dark:text-gray-400">
@@ -171,7 +185,7 @@ const Charts = ({ isDark = false }) => {
       </div>
 
       {/* Resumen de Métricas Clave */}
-      <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl shadow-sm border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
+      <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl shadow-lg border border-slate-700/50 h-[320px] hover:-translate-y-1 hover:shadow-xl transition-all transition-shadow duration-300 transition-opacity duration-500 opacity-0 animate-[fadeIn_.5s_ease-in-out_forwards]">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Resumen de Métricas
         </h3>

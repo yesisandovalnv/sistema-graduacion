@@ -5,7 +5,9 @@
 
 import { useState, useEffect } from 'react';
 import api from '../api/api';
+import axiosInstance from '../api/axios';
 import { API_CONFIG } from '../constants/api';
+import Alert from '../components/Alert';
 import { AlertCircle, Download } from 'lucide-react';
 
 const Reportes = () => {
@@ -50,7 +52,7 @@ const Reportes = () => {
   const handleExport = async () => {
     try {
       setExportingTutores(true);
-      const response = await api.axiosInstance.get(
+      const response = await axiosInstance.get(
         API_CONFIG.ENDPOINTS.EXPORTAR_ESTADISTICAS,
         { responseType: 'blob' }
       );
@@ -236,6 +238,9 @@ const Reportes = () => {
             Visualiza estadísticas y análisis del sistema
           </p>
         </div>
+
+        {/* Error Alert */}
+        {error && <Alert type="error" message={error} onClose={() => setError('')} autoClose={false} />}
 
         {/* Tabs */}
         <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
