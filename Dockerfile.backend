@@ -16,11 +16,11 @@ COPY . .
 
 RUN addgroup --system app && adduser --system --ingroup app app \
     && mkdir -p /app/staticfiles /app/media \
-    && chown -R app:app /app \
-    && chmod +x /app/entrypoint.sh
+    && chown -R app:app /app
 
 USER app
 
 EXPOSE 8000
 
-CMD ["/app/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["until nc -z \"$POSTGRES_HOST\" \"$POSTGRES_PORT\"; do echo 'Waiting for PostgreSQL...'; sleep 1; done && python manage.py migrate --noinput && python manage.py collectstatic --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"]
