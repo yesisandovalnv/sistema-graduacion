@@ -42,7 +42,7 @@ const Alert = ({ type = 'info', message, onClose, autoClose = true, duration = 5
       icon: '✕',
     },
     warning: {
-      bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+      bg: 'bg-yellow-100 dark:bg-yellow-900/30', 
       border: 'border-yellow-400 dark:border-yellow-800',
       text: 'text-yellow-700 dark:text-yellow-400',
       icon: '⚠',

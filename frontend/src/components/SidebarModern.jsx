@@ -84,7 +84,7 @@ const Sidebar = () => {
 
   return (
     <aside 
-      className={`fixed left-0 top-0 h-screen ${collapsed ? 'w-20' : 'w-64'} relative text-white transition-all duration-300 z-50 flex flex-col shadow-xl border-r border-white/10 overflow-hidden`}
+      className={`fixed left-0 top-0 h-screen ${collapsed ? 'w-20' : 'w-64'} relative text-white transition-all duration-300 ease-in-out z-50 flex flex-col shadow-xl border-r border-white/10 overflow-hidden`}
     >
       {/* Background Image Layer */}
       <div 
@@ -102,27 +102,25 @@ const Sidebar = () => {
       <div className="relative z-10 flex flex-col h-full text-white drop-shadow-xl">
         {/* Logo */}
         {!collapsed && (
-        <div className="p-6 border-b border-white/20">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl overflow-hidden bg-white/10 backdrop-blur flex items-center justify-center">
-              <img
-                src="/images/uabjb.png"
-                alt="Logo Universidad"
-                className="w-6 h-6 object-contain"
-              />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-lg font-semibold text-white tracking-wide">Graduación</h1>
-              <p className="text-xs text-gray-300">Sistema de Gestión</p>
-            </div>
+        <div className="p-4 border-b border-white/20 flex flex-col items-center transition-all duration-300 ease-in-out opacity-100">
+          <div className="w-24 h-24 rounded-xl overflow-hidden bg-white/10 backdrop-blur flex items-center justify-center mb-4 transition-all duration-300 ease-in-out">
+            <img
+              src="/images/uabjb.png"
+              alt="Logo Universidad"
+              className="w-20 h-20 object-contain transition-all duration-300 ease-in-out"
+            />
+          </div>
+          <div className="text-center transition-all duration-300 ease-in-out">
+            <h1 className="text-lg font-semibold text-white tracking-wide transition-all duration-300 ease-in-out">Graduación</h1>
+            <p className="text-xs text-gray-300 transition-all duration-300 ease-in-out">Sistema de Gestión</p>
           </div>
         </div>
         )}
 
         {/* Navegación + Separador + Configuración */}
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 justify-center transition-all duration-300 ease-in-out">
           {/* Navegación */}
-          <nav className="px-3 pt-2 pb-4 space-y-3">
+          <nav className="px-3 pt-1 pb-2 space-y-3 transition-all duration-300 ease-in-out">
             {visibleItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -137,9 +135,9 @@ const Sidebar = () => {
                       : 'text-white hover:bg-white/5 hover:translate-x-1'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-5 h-5 transition-transform group-hover:scale-110" />
-                    {!collapsed && <span className="font-medium tracking-wide">{item.label}</span>}
+                  <div className="flex items-center gap-2 transition-all duration-300 ease-in-out">
+                    <Icon className="w-5 h-5 transition-all duration-300 ease-in-out group-hover:scale-110" />
+                    {!collapsed && <span className="font-medium tracking-wide transition-all duration-300 ease-in-out">{item.label}</span>}
                   </div>
                   {item.badge && (
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -155,37 +153,19 @@ const Sidebar = () => {
               );
             })}
           </nav>
-
           {/* Separador */}
-          <div className="mx-4 my-4 border-t border-white/20"></div>
+          <div className="mx-4 my-1 border-t border-white/20 transition-all duration-300 ease-in-out"></div>
         </div>
 
         {/* Botón Colapsar */}
-        <div className="mt-auto py-4 px-2 flex justify-center w-full">
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 transition-all duration-300 ease-in-out">
           <button 
             onClick={() => setCollapsed(!collapsed)}
-            className="rounded-full bg-white/10 hover:bg-white/20 transition hover:scale-110 p-2 text-white"
+            className="rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 ease-in-out hover:scale-110 p-1.5 text-white"
           >
-            {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
         </div>
-
-        {/* Footer Info */}
-        {!collapsed && (
-        <div className="p-4 border-t border-white/20 bg-black/20">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <p className="text-xs font-semibold text-white mb-2">
-              ¿Necesitas ayuda?
-            </p>
-            <p className="text-xs text-gray-200 mb-3">
-              Consulta nuestra documentación o contacta al equipo de soporte.
-            </p>
-            <button className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition-colors">
-              Contactar Soporte
-            </button>
-          </div>
-        </div>
-        )}
       </div>
     </aside>
   );

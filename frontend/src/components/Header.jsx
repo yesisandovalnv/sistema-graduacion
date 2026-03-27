@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, User, LogOut, Settings, Moon, Sun } from 'lucide-react';
+import { Search, Bell, User, LogOut, Settings, Moon, Sun, HelpCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const Header = ({ user, onLogout }) => {
@@ -59,6 +59,15 @@ const Header = ({ user, onLogout }) => {
 
           {/* Acciones derechas */}
           <div className="flex items-center gap-4">
+            {/* Botón Ayuda */}
+            <button
+              onClick={() => console.log('Abrir ayuda')}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title="Ayuda"
+            >
+              <HelpCircle className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            </button>
+
             {/* Toggle Tema */}
             <button
               onClick={toggleTheme}
