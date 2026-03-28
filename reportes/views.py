@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from config.permissions import PuedeVerDashboardInstitucionalPermission
 from .health import HealthCheckService  # FASE 4: Health check
 
-from .services import dashboard_general, detalle_alumnos_titulados_por_tutor, estadisticas_tutores, generar_excel_tutores, reporte_eficiencia_carreras
+from .services import dashboard_general, detalle_alumnos_titulados_por_tutor, estadisticas_tutores, generar_excel_tutores, reporte_eficiencia_carreras, get_dashboard_chart_data
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,46 @@ class DashboardGeneralView(APIView):
                 {'detail': 'Internal server error', 'error': str(e)},
                 status=500
             )
+
+
+class DashboardChartDataView(APIView):
+    """
+    Endpoint para obtener datos de gráficos en formato compatible con Charts.jsx
+    Retorna: lineChartData, barChartData, pieChartData
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            logger.info("DashboardChartDataView request por usuario: %s", request.user.id)
+            
+            # Parámetro opcional: meses (por defecto 6)
+            meses = request.query_params.get('meses', 6)
+            try:
+                meses = int(meses)
+                if meses < 1 or meses > 12:
+                    meses = 6
+            except (ValueError, TypeError):
+                logger.warning("Parámetro 'meses' inválido, usando default: 6")
+                meses = 6
+            
+            logger.debug("Obteniendo chart data para %d meses", meses)
+            data = get_dashboard_chart_data(meses=meses)
+            
+            logger.debug("✅ Chart data prepared for %d months", meses)
+            return Response(data, status=200)
+            
+        except Exception as e:
+            logger.error("❌ ERROR en DashboardChartDataView: %s", str(e), exc_info=True)
+            import traceback
+            logger.error("Traceback completo:\n%s", traceback.format_exc())
+            # Retornar estructura vacía con mock como fallback
+            return Response({
+                'lineChartData': [],
+                'barChartData': [],
+                'pieChartData': [],
+                'error': str(e)
+            }, status=200)
 
 
 class EstadisticasTutoresView(APIView):

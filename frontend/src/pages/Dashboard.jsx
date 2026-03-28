@@ -19,6 +19,7 @@ const Dashboard = () => {
   const [postulantesRecientes, setPostulantesRecientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const postulantesColumns = [
     {
@@ -84,6 +85,7 @@ const Dashboard = () => {
 
   const handleRefresh = async () => {
     await fetchDashboardData();
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -136,29 +138,29 @@ const Dashboard = () => {
               stats={{
                 totalPostulantes: {
                   value: dashboardStats.total_postulantes || 0,
-                  change: 12,
+                  change: dashboardStats.cambio_postulantes_porcentaje || 0,
                   color: 'blue',
                 },
                 documentosPendientes: {
                   value: dashboardStats.documentos_pendientes || 0,
-                  change: -8,
+                  change: dashboardStats.cambio_documentos_porcentaje || 0,
                   color: 'yellow',
                 },
                 graduados: {
                   value: dashboardStats.total_titulados || 0,
-                  change: 24,
+                  change: dashboardStats.cambio_titulados_porcentaje || 0,
                   color: 'green',
                 },
                 tasaAprobacion: {
-                  value: dashboardStats.tasa_aprobacion || 87,
-                  change: 5,
+                  value: dashboardStats.tasa_aprobacion || 0,
+                  change: dashboardStats.cambio_tasa_porcentaje || 0,
                   color: 'purple',
                 },
               }}
             />
 
             {/* Gráficos */}
-            <Charts isDark={isDark} />
+            <Charts isDark={isDark} refreshKey={refreshKey} />
 
             {/* Tabla de Postulantes Recientes */}
             {postulantesRecientes.length > 0 && (

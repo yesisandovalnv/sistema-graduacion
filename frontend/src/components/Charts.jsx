@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-const Charts = ({ isDark = false }) => {
-  // Datos para el gráfico de barras (Postulantes por semana)
-  const barChartData = [
+const Charts = ({ isDark = false, refreshKey = 0 }) => {
+  // === MOCK DATA (respaldo) ===
+  const mockBarChartData = [
     { semana: 'Sem 1', postulantes: 45, documentos: 38 },
     { semana: 'Sem 2', postulantes: 52, documentos: 48 },
     { semana: 'Sem 3', postulantes: 38, documentos: 35 },
@@ -15,8 +15,7 @@ const Charts = ({ isDark = false }) => {
     { semana: 'Sem 6', postulantes: 72, documentos: 68 },
   ];
 
-  // Datos para el gráfico de línea (Progreso en el tiempo)
-  const lineChartData = [
+  const mockLineChartData = [
     { mes: 'Ene', graduados: 45, pendientes: 120, aprobados: 95 },
     { mes: 'Feb', graduados: 72, pendientes: 98, aprobados: 142 },
     { mes: 'Mar', graduados: 98, pendientes: 76, aprobados: 165 },
@@ -25,14 +24,154 @@ const Charts = ({ isDark = false }) => {
     { mes: 'Jun', graduados: 156, pendientes: 42, aprobados: 248 },
   ];
 
-  // Datos para el gráfico circular (Distribución por estado)
-  const pieChartData = [
+  const mockPieChartData = [
     { name: 'Completado', value: 45, color: '#10b981' },
     { name: 'En Proceso', value: 30, color: '#f59e0b' },
     { name: 'Por Revisar', value: 15, color: '#3b82f6' },
     { name: 'Rechazado', value: 10, color: '#ef4444' },
   ];
 
+  // === ESTADO: datos vacíos hasta que backend los cargue ===
+  const [barChartData, setBarChartData] = useState([]);
+  const [lineChartData, setLineChartData] = useState([]);
+  const [pieChartData, setPieChartData] = useState([]);
+  
+  // === ESTADO: Métricas de dashboard (NUEVAS - FASE 3) ===
+  const [metrics, setMetrics] = useState({
+    tasaAprobacion: 0,
+    promedioProcesamiento: 0,
+    satisfaccion: "N/A",  // ← IMPORTANTE: N/A por defecto, no 0
+    proyeccionMes: 0,
+  });
+
+  // === EFECTO: obtener datos reales del backend ===
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          console.error('❌ [CHARTS] NO TOKEN AVAILABLE - Critical error');
+          return;
+        }
+
+        console.log('═════════════════════════════════════════════');
+        console.log('🔄 [CHARTS] INICIANDO FETCH DE DATOS');
+        console.log('═════════════════════════════════════════════');
+        
+        // === FETCH 1: Chart Data ===
+        const chartResponse = await fetch('/api/reportes/dashboard-chart-data/?meses=6', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log('📡 [CHARTS] Chart Response.status:', chartResponse.status);
+
+        if (chartResponse.ok) {
+          const data = await chartResponse.json();
+          
+          console.log('📦 [CHARTS] RESPUESTA DEL BACKEND COMPLETA:');
+          console.log('   - data.pieChartData:', data.pieChartData);
+          console.log('   - data.barChartData:', data.barChartData);
+          console.log('   - data.lineChartData:', data.lineChartData);
+          
+          // ===== PIE CHART =====
+          if (data.pieChartData && Array.isArray(data.pieChartData) && data.pieChartData.length > 0) {
+            console.log('✅ [PIE] Backend devuelve pieChartData válido');
+            console.log('   - Primer elemento:', data.pieChartData[0]);
+            console.log('   - Total elementos:', data.pieChartData.length);
+            
+            setPieChartData(data.pieChartData);
+            console.log('✅ [PIE] setPieChartData ejecutado');
+          } else {
+            console.error('❌ [PIE] Backend NO devuelve pieChartData válido o está vacío');
+            console.log('   - data.pieChartData tipo:', typeof data.pieChartData);
+            console.log('   - Es array?:', Array.isArray(data.pieChartData));
+            console.log('   - Longitud:', data.pieChartData?.length);
+          }
+          
+          // ===== BAR CHART =====
+          if (data.barChartData && Array.isArray(data.barChartData) && data.barChartData.length > 0) {
+            console.log('✅ [BAR] Backend devuelve barChartData válido');
+            console.log('   - Total elementos:', data.barChartData.length);
+            setBarChartData(data.barChartData);
+            console.log('✅ [BAR] setBarChartData ejecutado');
+          } else {
+            console.error('❌ [BAR] Backend NO devuelve barChartData válido');
+          }
+          
+          // ===== LINE CHART =====
+          if (data.lineChartData && Array.isArray(data.lineChartData) && data.lineChartData.length > 0) {
+            console.log('✅ [LINE] Backend devuelve lineChartData válido');
+            console.log('   - Total elementos:', data.lineChartData.length);
+            setLineChartData(data.lineChartData);
+            console.log('✅ [LINE] setLineChartData ejecutado');
+          } else {
+            console.error('❌ [LINE] Backend NO devuelve lineChartData válido');
+          }
+          
+          console.log('═════════════════════════════════════════════');
+          console.log('✅ [CHARTS] FETCH DE GRÁFICOS COMPLETADO EXITOSAMENTE');
+          console.log('═════════════════════════════════════════════');
+        } else {
+          console.error('❌ [CHARTS] Chart Backend error - Status:', chartResponse.status);
+          const errorData = await chartResponse.json();
+          console.log('   - Error details:', errorData);
+        }
+
+        // === FETCH 2: Métricas de Dashboard (NUEVAS - FASE 3) ===
+        console.log('═════════════════════════════════════════════');
+        console.log('📊 [METRICS] CARGANDO MÉTRICAS DEL BACKEND');
+        console.log('═════════════════════════════════════════════');
+        
+        const metricsResponse = await fetch('/api/reportes/dashboard-general/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (metricsResponse.ok) {
+          const metricsData = await metricsResponse.json();
+          
+          console.log('✅ [METRICS] Datos recibidos del backend:');
+          console.log('   - tasa_aprobacion:', metricsData.tasa_aprobacion || 0);
+          console.log('   - promedio_procesamiento_dias:', metricsData.promedio_procesamiento_dias || 0);
+          console.log('   - satisfaccion_score:', metricsData.satisfaccion_score || 0);
+          console.log('   - proyeccion_mes_porcentaje:', metricsData.proyeccion_mes_porcentaje || 0);
+          
+          // Establecer métricas con valores del backend (o valores por defecto si no disponible)
+          setMetrics({
+            tasaAprobacion: metricsData.tasa_aprobacion || 0,
+            promedioProcesamiento: metricsData.promedio_procesamiento_dias || 0,
+            satisfaccion: metricsData.satisfaccion_score || "N/A",  // N/A si sin datos
+            proyeccionMes: metricsData.proyeccion_mes_porcentaje || 0,
+          });
+          
+          console.log('✅ [METRICS] Métricas actualizadas en el componente');
+          console.log('═════════════════════════════════════════════');
+        } else {
+          console.error('❌ [METRICS] Error cargando métricas - Status:', metricsResponse.status);
+          setMetrics({
+            tasaAprobacion: 0,
+            promedioProcesamiento: 0,
+            satisfaccion: "N/A",  // N/A como valor por defecto en error
+            proyeccionMes: 0,
+          });
+        }
+        
+      } catch (error) {
+        console.error('❌ [CHARTS] EXCEPCIÓN EN FETCH');
+        console.error('   - Mensaje:', error.message);
+        console.error('   - Stack:', error.stack);
+      }
+    };
+
+    fetchChartData();
+  }, [refreshKey]);
+
+  // === ESTILO (sin cambios) ===
   const chartColors = {
     textColor: isDark ? '#e5e7eb' : '#374151',
     gridColor: isDark ? '#374151' : '#e5e7eb',
@@ -50,6 +189,7 @@ const Charts = ({ isDark = false }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Postulantes & Documentos por Semana
         </h3>
+        {barChartData && barChartData.length > 0 && barChartData.some(d => d.postulantes > 0 || d.documentos > 0) ? (
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={barChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke={chartColors.gridColor} />
@@ -69,13 +209,24 @@ const Charts = ({ isDark = false }) => {
                 paddingTop: '16px',
                 color: chartColors.textColor,
                 fontSize: '14px',
+                display: 'flex',
+                gap: '16px',
+                justifyContent: 'center',
               }}
               textColor={chartColors.textColor}
             />
-            <Bar dataKey="postulantes" fill={chartColors.barColor1} radius={[8, 8, 0, 0]} />
-            <Bar dataKey="documentos" fill={chartColors.barColor2} radius={[8, 8, 0, 0]} />
+            <Bar dataKey="postulantes" fill={chartColors.barColor1} radius={[8, 8, 0, 0]} name="Postulantes" />
+            <Bar dataKey="documentos" fill={chartColors.barColor2} radius={[8, 8, 0, 0]} name="Documentos" />
           </BarChart>
         </ResponsiveContainer>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-[300px] bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Sin datos disponibles</p>
+          </div>
+        )}
       </div>
 
       {/* Gráfico de Línea */}
@@ -83,6 +234,7 @@ const Charts = ({ isDark = false }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Progreso General (6 Meses)
         </h3>
+        {lineChartData && lineChartData.length > 0 && lineChartData.some(d => d.graduados > 0 || d.pendientes > 0 || d.aprobados > 0) ? (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={lineChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke={chartColors.gridColor} />
@@ -102,6 +254,9 @@ const Charts = ({ isDark = false }) => {
                 paddingTop: '16px',
                 color: chartColors.textColor,
                 fontSize: '14px',
+                display: 'flex',
+                gap: '16px',
+                justifyContent: 'center',
               }}
               textColor={chartColors.textColor}
             />
@@ -113,6 +268,7 @@ const Charts = ({ isDark = false }) => {
               dot={{ fill: chartColors.lineColor1, r: 4 }}
               activeDot={{ r: 6 }}
               isAnimationActive={true}
+              name="Graduados"
             />
             <Line
               type="monotone"
@@ -122,6 +278,7 @@ const Charts = ({ isDark = false }) => {
               dot={{ fill: chartColors.lineColor2, r: 4 }}
               activeDot={{ r: 6 }}
               isAnimationActive={true}
+              name="Aprobados"
             />
             <Line
               type="monotone"
@@ -131,9 +288,18 @@ const Charts = ({ isDark = false }) => {
               dot={{ fill: chartColors.lineColor3, r: 4 }}
               activeDot={{ r: 6 }}
               isAnimationActive={true}
+              name="Pendientes"
             />
           </LineChart>
         </ResponsiveContainer>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-[300px] bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Sin datos disponibles</p>
+          </div>
+        )}
       </div>
 
       {/* Gráfico Circular - Primera mitad (ancho completo en móvil, mitad en desktop) */}
@@ -141,6 +307,8 @@ const Charts = ({ isDark = false }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           Distribución por Estado
         </h3>
+        {pieChartData && pieChartData.length > 0 && pieChartData.some(d => d.name !== 'Sin datos') ? (
+        <>
         <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie
@@ -182,6 +350,15 @@ const Charts = ({ isDark = false }) => {
             </div>
           ))}
         </div>
+        </>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-[220px] bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Sin registros</p>
+          </div>
+        )}
       </div>
 
       {/* Resumen de Métricas Clave */}
@@ -191,20 +368,26 @@ const Charts = ({ isDark = false }) => {
         </h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <span className="text-gray-600 dark:text-gray-400">Tasa Completación</span>
-            <span className="text-lg font-semibold text-green-600 dark:text-green-400">87%</span>
-          </div>
-          <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <span className="text-gray-600 dark:text-gray-400">Promedio Procesamiento</span>
-            <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">4.2 días</span>
+            <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+              {metrics.promedioProcesamiento || 0} días
+            </span>
           </div>
           <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <span className="text-gray-600 dark:text-gray-400">Satisfacción</span>
-            <span className="text-lg font-semibold text-purple-600 dark:text-purple-400">9.1/10</span>
+            <span className="text-lg font-semibold text-purple-600 dark:text-purple-400">
+              {metrics.satisfaccion === "N/A" ? "N/A" : `${metrics.satisfaccion || 0}/10`}
+            </span>
           </div>
           <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <span className="text-gray-600 dark:text-gray-400">Proyección Mes</span>
-            <span className="text-lg font-semibold text-orange-600 dark:text-orange-400">+24%</span>
+            <span className={`text-lg font-semibold ${
+              (metrics.proyeccionMes || 0) >= 0 
+                ? 'text-orange-600 dark:text-orange-400' 
+                : 'text-red-600 dark:text-red-400'
+            }`}>
+              {(metrics.proyeccionMes || 0) > 0 ? '+' : ''}{metrics.proyeccionMes || 0}%
+            </span>
           </div>
         </div>
       </div>

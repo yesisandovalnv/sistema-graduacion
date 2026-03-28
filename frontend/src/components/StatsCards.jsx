@@ -3,10 +3,10 @@ import { TrendingUp, TrendingDown, Users, FileText, CheckCircle, Zap } from 'luc
 
 const StatsCards = ({ stats = {} }) => {
   const defaultStats = {
-    totalPostulantes: { value: 248, change: 12, icon: Users, color: 'blue' },
-    documentosPendientes: { value: 42, change: -8, icon: FileText, color: 'yellow' },
-    graduados: { value: 156, change: 24, icon: CheckCircle, color: 'green' },
-    tasaAprobacion: { value: 87, change: 5, icon: Zap, color: 'purple' },
+    totalPostulantes: { value: 0, change: 0, icon: Users, color: 'blue' },
+    documentosPendientes: { value: 0, change: 0, icon: FileText, color: 'yellow' },
+    graduados: { value: 0, change: 0, icon: CheckCircle, color: 'green' },
+    tasaAprobacion: { value: 0, change: 0, icon: Zap, color: 'purple' },
   };
 
   // Merge profundo: preserva iconos del default si no están en stats
