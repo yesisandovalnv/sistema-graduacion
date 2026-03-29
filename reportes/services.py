@@ -485,8 +485,8 @@ def get_dashboard_chart_data(meses: int = 6) -> dict:
         
         # Generar lineChartData (Progreso General por Mes)
         lineChartData = []
-        for i in range(meses):
-            fecha = fecha_inicio + relativedelta(months=i)
+        for i in range(-(meses-1), 1):
+            fecha = fecha_fin + relativedelta(months=i)
             mes_label = fecha.strftime('%b')  # Ene, Feb, Mar, etc.
             
             # ✅ FIX: hacer las fechas compatible para búsqueda en diccionario
@@ -504,9 +504,9 @@ def get_dashboard_chart_data(meses: int = 6) -> dict:
         
         # Generar barChartData (Postulantes & Documentos por Semana/Mes)
         barChartData = []
-        for i in range(meses):
-            fecha = fecha_inicio + relativedelta(months=i)
-            mes_label = f'Sem {i+1}' if meses == 6 else fecha.strftime('%b')
+        for contador, i in enumerate(range(-(meses-1), 1), 1):
+            fecha = fecha_fin + relativedelta(months=i)
+            mes_label = f'Sem {contador}' if meses == 6 else fecha.strftime('%b')
             
             # ✅ FIX: hacer las fechas compatible para búsqueda en diccionario
             fecha_key = fecha.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
