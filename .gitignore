@@ -15,3 +15,10 @@ logs/*.err
 *.log
 *.err
 login.json
+
+# ========== ARCHIVOS DE DIAGNÓSTICO TEMPORALES ==========
+# Scripts temporales de debugging - no versionar
+causa_raiz.py
+diagnostico_detallado.py
+diagnostico_simple.py
+validacion_fix.py
