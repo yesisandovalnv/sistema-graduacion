@@ -250,6 +250,10 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://sistema-graduacion-1.onrender.com"
+]
+
 # Logging Configuration - FASE 1: Observabilidad
 LOGGING = {
     'version': 1,
