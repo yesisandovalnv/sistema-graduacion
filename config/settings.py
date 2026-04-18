@@ -90,15 +90,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'sistema_graduacion'),
-        'USER': os.getenv('POSTGRES_USER', 'sistema_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'sistema_pass'),
-        'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-        'PORT': os.getenv('POSTGRES_PORT', '5432'),
-    }
+    'default': dj_database_url.parse(
+        "postgresql://sistema_graduacion_postgres_user:6YMHHlwkvVVoXmhrAjjkGNgNDTxfMi6E@dpg-d7h9kg1j2pic7397967g-a.oregon-postgres.render.com:5432/sistema_graduacion_postgres"
+    )
 }
 
 
