@@ -135,6 +135,8 @@ class DocumentoPostulacionViewSet(viewsets.ModelViewSet):
             print(f"Error al enviar notificación de rechazo: {e}")
 
 
+from rest_framework.permissions import AllowAny  
+
 class TipoDocumentoViewSet(viewsets.ModelViewSet):
     queryset = TipoDocumento.objects.all()
     serializer_class = TipoDocumentoSerializer
@@ -144,6 +146,10 @@ class TipoDocumentoViewSet(viewsets.ModelViewSet):
     ordering = ['nombre']
 
     def get_permissions(self):
+        if self.action in {'list', 'retrieve'}:
+            return [AllowAny()]  # 👈 lectura pública
+
         if self.action in {'create', 'update', 'partial_update', 'destroy'}:
-            return [CRUDModelPermission()]
+            return [CRUDModelPermission()]  # 👈 protegido
+
         return super().get_permissions()
